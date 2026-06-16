@@ -6,9 +6,9 @@ retrieve relevant code, plan safe changes, edit files, run checks, self-correct,
 and produce PR-ready summaries.
 
 The current version establishes a clean Python project skeleton, adds a
-deterministic repository scanner, and introduces line-based code chunking. These
-pieces are intentionally separate from any LLM, embedding, vector database, or
-agent logic.
+deterministic repository scanner, introduces line-based code chunking, and adds a
+keyword search retriever. These pieces are intentionally separate from any LLM,
+embedding, vector database, or agent logic.
 
 ## Requirements
 
@@ -124,6 +124,27 @@ chunks = chunk_file("D:/RepoPilot", scan.files[0])
 print(chunks[0].path, chunks[0].start_line, chunks[0].end_line)
 ```
 
+## Keyword Retriever
+
+Milestone 4 adds deterministic keyword retrieval:
+
+- Accepts a list of `CodeChunk` objects and a natural language query
+- Tokenizes query, paths, and chunk text
+- Ignores case and simple punctuation
+- Scores path matches higher than text matches
+- Returns ranked chunks with score and matched terms
+- Handles empty queries and empty chunk lists safely
+
+Example usage:
+
+```python
+from repopilot.retrieval import retrieve_keyword_chunks
+
+results = retrieve_keyword_chunks(chunks, "auth login route", top_k=3)
+for result in results:
+    print(result.score, result.chunk.path, result.matched_terms)
+```
+
 ## Current Scope
 
 Included:
@@ -138,11 +159,12 @@ Included:
 - Python `.gitignore`
 - Deterministic repository scanner
 - Deterministic line-based code chunker
+- Deterministic keyword search retriever
 
 Not included yet:
 
 - Code indexing
-- Retrieval
+- Embedding retrieval
 - LLM calls
 - Vector database
 - File editing agent
