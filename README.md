@@ -8,8 +8,8 @@ and produce PR-ready summaries.
 The current version establishes a clean Python project skeleton, adds a
 deterministic repository scanner, introduces line-based code chunking, and adds a
 keyword search retriever. It also composes them into a repository context
-builder. These pieces are intentionally separate from any LLM, embedding, vector
-database, or agent logic.
+builder and deterministic planning layer. These pieces are intentionally separate
+from any real LLM, embedding, vector database, or agent execution logic.
 
 ## Requirements
 
@@ -166,6 +166,31 @@ for result in context.retrieved_chunks:
     print(result.score, result.chunk.path, result.matched_terms)
 ```
 
+## Planning Layer
+
+Milestone 6 turns repository context into a structured implementation plan:
+
+- Accepts a user issue and `RepositoryContext`
+- Builds a deterministic planning prompt
+- Returns objective, relevant files, ordered steps, risks, assumptions, and
+  confidence
+- Works without any external LLM API key
+- Does not edit files or run tests
+
+Example usage:
+
+```python
+from repopilot.context import build_repository_context
+from repopilot.planning import create_implementation_plan
+
+issue = "Fix repository scanner handling for empty files"
+context = build_repository_context("D:/RepoPilot", issue)
+plan = create_implementation_plan(issue, context)
+print(plan.objective, plan.confidence)
+for step in plan.steps:
+    print(step.order, step.description, step.target_files)
+```
+
 ## Current Scope
 
 Included:
@@ -182,6 +207,7 @@ Included:
 - Deterministic line-based code chunker
 - Deterministic keyword search retriever
 - Deterministic repository context builder
+- Deterministic structured planning layer
 
 Not included yet:
 
@@ -189,4 +215,5 @@ Not included yet:
 - LLM calls
 - Vector database
 - File editing agent
+- Test execution tools
 - Test self-correction loop
