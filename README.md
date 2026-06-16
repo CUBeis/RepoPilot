@@ -9,8 +9,9 @@ The current version establishes a clean Python project skeleton, adds a
 deterministic repository scanner, introduces line-based code chunking, and adds a
 keyword search retriever. It also composes them into a repository context
 builder, deterministic planning layer, and provider-independent LLM client
-abstraction. These pieces are intentionally separate from any real LLM,
-embedding, vector database, or agent execution logic.
+abstraction. It can also create plans through an injected LLM client using a
+fake deterministic client in tests. These pieces are intentionally separate from
+any real LLM, embedding, vector database, file editing, or shell execution logic.
 
 ## Requirements
 
@@ -216,6 +217,65 @@ response = client.generate(request)
 print(response.content, response.usage)
 ```
 
+## LLM-Backed Planner
+
+Milestone 8 adds an LLM-backed planner that works with any `LLMClient`:
+
+- Builds the existing planning prompt
+- Sends an `LLMRequest` through the provided client
+- Expects JSON response content
+- Parses and validates the JSON into `ImplementationPlan`
+- Works with `FakeLLMClient` for deterministic tests
+
+Example usage:
+
+```python
+import json
+
+from repopilot.context import build_repository_context
+from repopilot.llm import FakeLLMClient
+from repopilot.planning import create_llm_implementation_plan
+
+fake_response = json.dumps({
+    "objective": "Fix login bug",
+    "relevant_files": ["src/auth.py"],
+    "steps": [{
+        "order": 1,
+        "description": "Inspect the login function.",
+        "target_files": ["src/auth.py"],
+    }],
+    "risks": ["May affect authentication flow."],
+    "assumptions": ["Retrieved chunks are relevant."],
+    "confidence": 0.8,
+})
+
+context = build_repository_context("D:/RepoPilot", "Fix login bug")
+client = FakeLLMClient(fake_response)
+plan = create_llm_implementation_plan("Fix login bug", context, client)
+print(plan.objective, plan.confidence)
+```
+
+## Read-Only File Tools
+
+Milestone 9 adds safe read-only filesystem tools:
+
+- Accept a repository root and relative file path
+- Reject absolute paths and path traversal
+- Read UTF-8 text files only
+- Support whole-file reads and line-range reads
+- Enforce size and line-count limits
+- Return structured metadata with POSIX-style relative paths
+
+Example usage:
+
+```python
+from repopilot.tools import read_text_file_lines
+
+result = read_text_file_lines("D:/RepoPilot", "README.md", 1, 10)
+print(result.path, result.start_line, result.end_line)
+print(result.content)
+```
+
 ## Current Scope
 
 Included:
@@ -235,6 +295,8 @@ Included:
 - Deterministic structured planning layer
 - Provider-independent LLM client abstraction
 - Deterministic fake LLM client
+- LLM-backed planner using injected fake/test clients
+- Safe read-only file tools
 
 Not included yet:
 
@@ -243,4 +305,5 @@ Not included yet:
 - Vector database
 - File editing agent
 - Test execution tools
+- Shell command execution tools
 - Test self-correction loop
