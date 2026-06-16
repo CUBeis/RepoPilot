@@ -8,8 +8,9 @@ and produce PR-ready summaries.
 The current version establishes a clean Python project skeleton, adds a
 deterministic repository scanner, introduces line-based code chunking, and adds a
 keyword search retriever. It also composes them into a repository context
-builder and deterministic planning layer. These pieces are intentionally separate
-from any real LLM, embedding, vector database, or agent execution logic.
+builder, deterministic planning layer, and provider-independent LLM client
+abstraction. These pieces are intentionally separate from any real LLM,
+embedding, vector database, or agent execution logic.
 
 ## Requirements
 
@@ -191,6 +192,30 @@ for step in plan.steps:
     print(step.order, step.description, step.target_files)
 ```
 
+## LLM Client Abstraction
+
+Milestone 7 adds provider-independent LLM request and response models, a client
+protocol, and a deterministic fake client:
+
+- Defines `LLMMessage`, `LLMRequest`, `LLMUsage`, and `LLMResponse`
+- Defines an `LLMClient` protocol
+- Includes `FakeLLMClient` for tests and local development
+- Does not call external APIs or require API keys
+
+Example usage:
+
+```python
+from repopilot.llm import FakeLLMClient, LLMMessage, LLMRequest
+
+client = FakeLLMClient("Deterministic response")
+request = LLMRequest(
+    messages=[LLMMessage(role="user", content="Create a plan")],
+    model="fake-planner",
+)
+response = client.generate(request)
+print(response.content, response.usage)
+```
+
 ## Current Scope
 
 Included:
@@ -208,11 +233,13 @@ Included:
 - Deterministic keyword search retriever
 - Deterministic repository context builder
 - Deterministic structured planning layer
+- Provider-independent LLM client abstraction
+- Deterministic fake LLM client
 
 Not included yet:
 
 - Embedding retrieval
-- LLM calls
+- Real LLM provider calls
 - Vector database
 - File editing agent
 - Test execution tools
