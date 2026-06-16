@@ -5,9 +5,9 @@ engineer. The long-term goal is a coding assistant that can ingest repositories,
 retrieve relevant code, plan safe changes, edit files, run checks, self-correct,
 and produce PR-ready summaries.
 
-This first version is intentionally small. It establishes a clean Python project
-skeleton with a FastAPI backend, typed configuration, Pydantic schemas, Ruff, and
-pytest.
+The current version establishes a clean Python project skeleton and adds a
+deterministic repository scanner. The scanner is intentionally separate from any
+LLM, embedding, vector database, or agent logic.
 
 ## Requirements
 
@@ -81,6 +81,26 @@ Format code:
 ruff format .
 ```
 
+## Repository Scanner
+
+Milestone 2 adds deterministic local repository scanning:
+
+- Validates that a root path exists and is a directory
+- Recursively scans supported text files
+- Ignores generated or noisy folders such as `.git`, `.venv`, and `node_modules`
+- Skips unsupported, binary, and oversized files
+- Returns relative paths and metadata such as language, size, line count, and
+  SHA-256 hash
+
+Example usage:
+
+```python
+from repopilot.repository import scan_repository
+
+result = scan_repository("D:/RepoPilot")
+print(result.file_count)
+```
+
 ## Current Scope
 
 Included:
@@ -93,10 +113,10 @@ Included:
 - Ruff configuration
 - Example environment file
 - Python `.gitignore`
+- Deterministic repository scanner
 
 Not included yet:
 
-- Repository ingestion
 - Code indexing
 - Retrieval
 - LLM calls
