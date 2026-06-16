@@ -7,8 +7,9 @@ and produce PR-ready summaries.
 
 The current version establishes a clean Python project skeleton, adds a
 deterministic repository scanner, introduces line-based code chunking, and adds a
-keyword search retriever. These pieces are intentionally separate from any LLM,
-embedding, vector database, or agent logic.
+keyword search retriever. It also composes them into a repository context
+builder. These pieces are intentionally separate from any LLM, embedding, vector
+database, or agent logic.
 
 ## Requirements
 
@@ -145,6 +146,26 @@ for result in results:
     print(result.score, result.chunk.path, result.matched_terms)
 ```
 
+## Repository Context Builder
+
+Milestone 5 composes scanner, chunker, and keyword retrieval:
+
+- Scans a repository
+- Chunks every scanned file
+- Retrieves relevant chunks for a natural language query
+- Returns scan summary, total chunk count, and ranked retrieved chunks
+
+Example usage:
+
+```python
+from repopilot.context import build_repository_context
+
+context = build_repository_context("D:/RepoPilot", "repository scanner")
+print(context.scanned_file_count, context.total_chunks)
+for result in context.retrieved_chunks:
+    print(result.score, result.chunk.path, result.matched_terms)
+```
+
 ## Current Scope
 
 Included:
@@ -160,10 +181,10 @@ Included:
 - Deterministic repository scanner
 - Deterministic line-based code chunker
 - Deterministic keyword search retriever
+- Deterministic repository context builder
 
 Not included yet:
 
-- Code indexing
 - Embedding retrieval
 - LLM calls
 - Vector database
