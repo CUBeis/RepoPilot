@@ -95,6 +95,15 @@ Format code:
 ruff format .
 ```
 
+## Run CLI Demo
+
+Print a sample RepoPilot run report without scanning repositories, calling LLMs,
+running commands, or writing files:
+
+```powershell
+repopilot report-demo
+```
+
 ## Repository Scanner
 
 Milestone 2 adds deterministic local repository scanning:
@@ -566,6 +575,17 @@ print(report.status)
 print(report.markdown_summary)
 ```
 
+## CLI Demo Command
+
+Milestone 20 adds a small CLI entry point:
+
+```powershell
+repopilot report-demo
+```
+
+The command builds an in-memory sample run report and prints its Markdown
+summary. It is read-only and does not execute agent tools.
+
 ## Current Scope
 
 Included:
@@ -597,6 +617,7 @@ Included:
 - LLM repair proposal generator using injected fake/test clients
 - Approval-gated repair workflow for generated repair proposals
 - Agent run reports for CLI/API/demo/PR summaries
+- CLI demo command for printing a sample run report
 
 Not included yet:
 
