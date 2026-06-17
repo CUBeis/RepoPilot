@@ -10,8 +10,10 @@ deterministic repository scanner, introduces line-based code chunking, and adds 
 keyword search retriever. It also composes them into a repository context
 builder, deterministic planning layer, and provider-independent LLM client
 abstraction. It can also create plans through an injected LLM client using a
-fake deterministic client in tests. These pieces are intentionally separate from
-any real LLM, embedding, vector database, file editing, or shell execution logic.
+fake deterministic client in tests, read files through safe read-only tools, and
+prepare approval-gated patch proposals. These pieces are intentionally separate
+from any real LLM, embedding, vector database, file editing, or shell execution
+logic.
 
 ## Requirements
 
@@ -276,6 +278,33 @@ print(result.path, result.start_line, result.end_line)
 print(result.content)
 ```
 
+## Patch Proposal Layer
+
+Milestone 10 adds structured patch proposals without writing files:
+
+- Accepts an `ImplementationPlan` and read-only `FileReadResult` objects
+- Validates that planned target files were actually read
+- Rejects reads for files outside the plan
+- Preserves original content until a future editing layer exists
+- Requires approval before any future patch application
+
+Example usage:
+
+```python
+from repopilot.patching import create_patch_proposal
+from repopilot.planning import create_implementation_plan
+from repopilot.context import build_repository_context
+from repopilot.tools import read_text_file
+
+issue = "Update README setup guidance"
+context = build_repository_context("D:/RepoPilot", issue)
+plan = create_implementation_plan(issue, context)
+file_reads = [read_text_file("D:/RepoPilot", path) for path in plan.relevant_files]
+
+proposal = create_patch_proposal(plan, file_reads)
+print(proposal.summary, proposal.requires_approval)
+```
+
 ## Current Scope
 
 Included:
@@ -297,12 +326,14 @@ Included:
 - Deterministic fake LLM client
 - LLM-backed planner using injected fake/test clients
 - Safe read-only file tools
+- Approval-gated patch proposal layer
 
 Not included yet:
 
 - Embedding retrieval
 - Real LLM provider calls
 - Vector database
+- File writing or patch application
 - File editing agent
 - Test execution tools
 - Shell command execution tools
