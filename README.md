@@ -17,9 +17,10 @@ a safe command runner for approved validation commands, a validation pipeline,
 structured failure analysis, and a bounded self-correction orchestrator that can
 try supplied repair proposals. It can also ask an injected `LLMClient` to
 produce a repair `PatchProposal` from a failed attempt, failure analysis, and
-read-only file context. These pieces are intentionally separate from any real
-LLM, embedding, vector database, autonomous file editing agent, arbitrary shell
-execution, or unapproved patch application.
+read-only file context, then package that repair as an approval request. These
+pieces are intentionally separate from any real LLM, embedding, vector database,
+autonomous file editing agent, arbitrary shell execution, or unapproved patch
+application.
 
 ## Requirements
 
@@ -511,6 +512,31 @@ repair_proposal = create_llm_repair_proposal(
 print(repair_proposal.requires_approval)
 ```
 
+## Approval-Gated Repair Workflow
+
+Milestone 18 wraps generated repair proposals in an explicit approval request:
+
+- Accepts a failed `SelfCorrectionAttempt`
+- Calls the LLM repair proposal generator
+- Returns a `RepairApprovalRequest`
+- Always marks approval as required
+- Does not apply patches, run validation commands, or call the self-correction
+  loop
+
+Example usage:
+
+```python
+from repopilot.agent import prepare_repair_for_approval
+
+approval_request = prepare_repair_for_approval(
+    failed_attempt,
+    file_reads,
+    client,
+)
+print(approval_request.approval_required)
+print(approval_request.repair_proposal.summary)
+```
+
 ## Current Scope
 
 Included:
@@ -540,6 +566,7 @@ Included:
 - Validation failure analyzer for structured failure summaries
 - Self-correction orchestrator for bounded approved repair attempts
 - LLM repair proposal generator using injected fake/test clients
+- Approval-gated repair workflow for generated repair proposals
 
 Not included yet:
 
@@ -547,4 +574,4 @@ Not included yet:
 - Real LLM provider calls
 - Vector database
 - Autonomous file editing agent
-- Fully autonomous repair loops
+- Automatic repair application without approval

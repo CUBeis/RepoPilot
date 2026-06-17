@@ -19,3 +19,12 @@ class SelfCorrectionResult(BaseModel):
     attempts: list[SelfCorrectionAttempt]
     final_passed: bool
     stopped_reason: str
+
+
+class RepairApprovalRequest(BaseModel):
+    """A generated repair proposal waiting for explicit approval."""
+
+    failed_attempt: SelfCorrectionAttempt
+    repair_proposal: PatchProposal
+    approval_required: bool = True
+    summary: str
