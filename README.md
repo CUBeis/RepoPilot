@@ -19,6 +19,8 @@ It now includes a safe command runner foundation for approved validation
 commands, but it still does not self-correct or run autonomous agent loops.
 The current validation pipeline can apply an approved patch and run allowlisted
 checks, then report the result without attempting repairs.
+Validation failures can also be summarized into structured, agent-readable
+failure analysis, still without generating fixes.
 
 ## Requirements
 
@@ -435,6 +437,27 @@ result = apply_and_validate_patch(
 print(result.passed)
 ```
 
+## Validation Failure Analyzer
+
+Milestone 15 summarizes failed validation results for future self-correction:
+
+- Accepts a `PatchValidationResult`
+- Detects failed checks where `check.passed` is `False`
+- Captures stdout and stderr excerpts
+- Handles timeout failures clearly
+- Returns whether future self-correction is needed
+- Does not rerun commands, mutate files, call LLMs, or create repairs
+
+Example usage:
+
+```python
+from repopilot.validation import analyze_validation_result
+
+analysis = analyze_validation_result(result)
+print(analysis.summary)
+print(analysis.needs_self_correction)
+```
+
 ## Current Scope
 
 Included:
@@ -461,6 +484,7 @@ Included:
 - Safe patch applier for explicitly approved proposals
 - Safe command runner for allowlisted validation commands
 - Patch validation pipeline for apply -> validate workflows
+- Validation failure analyzer for structured failure summaries
 
 Not included yet:
 
