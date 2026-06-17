@@ -135,6 +135,25 @@ Example JSON body:
 }
 ```
 
+## Run Context Preview API Demo
+
+With the FastAPI server running, request bounded retrieved chunk previews:
+
+```text
+POST http://127.0.0.1:8000/repositories/context-preview
+```
+
+Example JSON body:
+
+```json
+{
+  "root_path": "D:/RepoPilot",
+  "query": "repository scanner",
+  "top_k": 5,
+  "max_preview_chars": 500
+}
+```
+
 ## Repository Scanner
 
 Milestone 2 adds deterministic local repository scanning:
@@ -639,6 +658,18 @@ read-only endpoint:
 - Does not chunk files, run retrieval, call LLMs, run commands, apply patches,
   or write files
 
+## Context Preview API
+
+Milestone 23 exposes a safe read-only context preview endpoint:
+
+- `POST /repositories/context-preview`
+- Accepts `root_path`, `query`, `top_k`, and `max_preview_chars`
+- Scans, chunks, and keyword-retrieves deterministic context
+- Returns only retrieved chunk previews with relative paths
+- Truncates preview text to the requested limit
+- Does not call LLMs, plan changes, propose patches, run commands, or write
+  files
+
 ## Current Scope
 
 Included:
@@ -673,6 +704,7 @@ Included:
 - CLI demo command for printing a sample run report
 - Reporting API demo endpoints for JSON and Markdown summaries
 - Repository scan summary API endpoint
+- Context preview API endpoint with bounded chunk previews
 
 Not included yet:
 
