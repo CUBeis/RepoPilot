@@ -11,9 +11,9 @@ keyword search retriever. It also composes them into a repository context
 builder, deterministic planning layer, and provider-independent LLM client
 abstraction. It can also create plans through an injected LLM client using a
 fake deterministic client in tests, read files through safe read-only tools, and
-prepare approval-gated patch proposals. These pieces are intentionally separate
-from any real LLM, embedding, vector database, file editing, or shell execution
-logic.
+prepare approval-gated patch proposals, including proposals generated through
+the LLM client abstraction. These pieces are intentionally separate from any
+real LLM, embedding, vector database, file editing, or shell execution logic.
 
 ## Requirements
 
@@ -305,6 +305,46 @@ proposal = create_patch_proposal(plan, file_reads)
 print(proposal.summary, proposal.requires_approval)
 ```
 
+## LLM Patch Proposal Generator
+
+Milestone 11 adds an LLM-backed patch proposal generator that works with any
+`LLMClient`:
+
+- Builds a prompt from an `ImplementationPlan` and read-only file results
+- Sends an `LLMRequest` through the provided client
+- Expects JSON response content
+- Parses and validates that JSON into `PatchProposal`
+- Forces `requires_approval=True`
+- Does not write files or apply patches
+
+Example usage with `FakeLLMClient`:
+
+```python
+import json
+
+from repopilot.llm import FakeLLMClient
+from repopilot.patching import create_llm_patch_proposal
+
+fake_response = json.dumps({
+    "summary": "Update login behavior.",
+    "target_files": ["src/auth.py"],
+    "changes": [{
+        "path": "src/auth.py",
+        "reason": "Make login return success.",
+        "start_line": 1,
+        "end_line": 2,
+        "original_content": "def login_user():\n    return False\n",
+        "proposed_content": "def login_user():\n    return True\n",
+    }],
+    "risks": ["May affect authentication flow."],
+    "requires_approval": False,
+})
+
+client = FakeLLMClient(fake_response)
+proposal = create_llm_patch_proposal(plan, file_reads, client)
+print(proposal.requires_approval)
+```
+
 ## Current Scope
 
 Included:
@@ -327,6 +367,7 @@ Included:
 - LLM-backed planner using injected fake/test clients
 - Safe read-only file tools
 - Approval-gated patch proposal layer
+- LLM-backed patch proposal generator using injected fake/test clients
 
 Not included yet:
 
