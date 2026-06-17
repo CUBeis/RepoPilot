@@ -12,8 +12,9 @@ builder, deterministic planning layer, and provider-independent LLM client
 abstraction. It can also create plans through an injected LLM client using a
 fake deterministic client in tests, read files through safe read-only tools, and
 prepare approval-gated patch proposals, including proposals generated through
-the LLM client abstraction. These pieces are intentionally separate from any
-real LLM, embedding, vector database, file editing, or shell execution logic.
+the LLM client abstraction, and safely apply approved proposals. These pieces
+are intentionally separate from any real LLM, embedding, vector database,
+autonomous file editing agent, test execution, or shell execution logic.
 
 ## Requirements
 
@@ -345,6 +346,30 @@ proposal = create_llm_patch_proposal(plan, file_reads, client)
 print(proposal.requires_approval)
 ```
 
+## Safe Patch Applier
+
+Milestone 12 adds safe patch application for approved proposals:
+
+- Requires explicit approval before writing
+- Refuses proposals that do not require approval
+- Validates relative paths stay inside the repository root
+- Rejects missing files, directories, absolute paths, and path traversal
+- Applies only when current file content exactly matches `original_content`
+- Writes UTF-8 `proposed_content` only after every change is validated
+
+Example usage:
+
+```python
+from repopilot.patching import apply_patch_proposal
+
+result = apply_patch_proposal(
+    "D:/RepoPilot",
+    proposal,
+    approved=True,
+)
+print(result.changed_file_count)
+```
+
 ## Current Scope
 
 Included:
@@ -368,14 +393,14 @@ Included:
 - Safe read-only file tools
 - Approval-gated patch proposal layer
 - LLM-backed patch proposal generator using injected fake/test clients
+- Safe patch applier for explicitly approved proposals
 
 Not included yet:
 
 - Embedding retrieval
 - Real LLM provider calls
 - Vector database
-- File writing or patch application
-- File editing agent
+- Autonomous file editing agent
 - Test execution tools
 - Shell command execution tools
 - Test self-correction loop
