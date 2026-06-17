@@ -17,6 +17,8 @@ are intentionally separate from any real LLM, embedding, vector database,
 autonomous file editing agent, test execution, or shell execution logic.
 It now includes a safe command runner foundation for approved validation
 commands, but it still does not self-correct or run autonomous agent loops.
+The current validation pipeline can apply an approved patch and run allowlisted
+checks, then report the result without attempting repairs.
 
 ## Requirements
 
@@ -402,6 +404,37 @@ print(result.return_code)
 print(result.stdout)
 ```
 
+## Patch Validation Pipeline
+
+Milestone 14 composes approved patch application with validation commands:
+
+- Applies a `PatchProposal` through the safe patch applier
+- Runs validation commands only after the patch applies successfully
+- Uses the safe command runner for every command
+- Allows only the requested validation commands
+- Marks checks passed when return code is `0` and the command did not time out
+- Does not self-correct or call an LLM
+
+Default validation commands:
+
+```python
+["pytest"]
+["ruff", "check", "."]
+```
+
+Example usage:
+
+```python
+from repopilot.validation import apply_and_validate_patch
+
+result = apply_and_validate_patch(
+    "D:/RepoPilot",
+    proposal,
+    approved=True,
+)
+print(result.passed)
+```
+
 ## Current Scope
 
 Included:
@@ -427,6 +460,7 @@ Included:
 - LLM-backed patch proposal generator using injected fake/test clients
 - Safe patch applier for explicitly approved proposals
 - Safe command runner for allowlisted validation commands
+- Patch validation pipeline for apply -> validate workflows
 
 Not included yet:
 
