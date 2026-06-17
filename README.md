@@ -15,6 +15,8 @@ prepare approval-gated patch proposals, including proposals generated through
 the LLM client abstraction, and safely apply approved proposals. These pieces
 are intentionally separate from any real LLM, embedding, vector database,
 autonomous file editing agent, test execution, or shell execution logic.
+It now includes a safe command runner foundation for approved validation
+commands, but it still does not self-correct or run autonomous agent loops.
 
 ## Requirements
 
@@ -370,6 +372,36 @@ result = apply_patch_proposal(
 print(result.changed_file_count)
 ```
 
+## Safe Command Runner
+
+Milestone 13 adds a constrained command runner for validation commands:
+
+- Runs commands with `cwd` set to the repository root
+- Uses `subprocess.run` without `shell=True`
+- Captures stdout and stderr as text
+- Enforces timeouts
+- Allows only exact commands from an allowlist
+- Returns a structured `CommandResult`
+- Does not self-correct or interpret failures
+
+Default allowlist:
+
+```python
+["pytest"]
+["ruff", "check", "."]
+["ruff", "format", "--check", "."]
+```
+
+Example usage:
+
+```python
+from repopilot.tools import run_command
+
+result = run_command("D:/RepoPilot", ["pytest"])
+print(result.return_code)
+print(result.stdout)
+```
+
 ## Current Scope
 
 Included:
@@ -394,6 +426,7 @@ Included:
 - Approval-gated patch proposal layer
 - LLM-backed patch proposal generator using injected fake/test clients
 - Safe patch applier for explicitly approved proposals
+- Safe command runner for allowlisted validation commands
 
 Not included yet:
 
@@ -401,6 +434,4 @@ Not included yet:
 - Real LLM provider calls
 - Vector database
 - Autonomous file editing agent
-- Test execution tools
-- Shell command execution tools
 - Test self-correction loop

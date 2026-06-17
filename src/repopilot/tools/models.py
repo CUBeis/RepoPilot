@@ -10,3 +10,13 @@ class FileReadResult(BaseModel):
     content: str
     total_lines: int = Field(ge=0)
     size_bytes: int = Field(ge=0)
+
+
+class CommandResult(BaseModel):
+    """Structured result for a safe command execution."""
+
+    command: list[str]
+    return_code: int
+    stdout: str
+    stderr: str
+    timed_out: bool
