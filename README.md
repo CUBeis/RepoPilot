@@ -119,6 +119,22 @@ http://127.0.0.1:8000/report-demo
 http://127.0.0.1:8000/report-demo/markdown
 ```
 
+## Run Repository Scan API Demo
+
+With the FastAPI server running, request a safe read-only scan summary:
+
+```text
+POST http://127.0.0.1:8000/repositories/scan-summary
+```
+
+Example JSON body:
+
+```json
+{
+  "root_path": "D:/RepoPilot"
+}
+```
+
 ## Repository Scanner
 
 Milestone 2 adds deterministic local repository scanning:
@@ -611,6 +627,18 @@ Milestone 21 exposes the same kind of safe sample run report through FastAPI:
 Both endpoints are in-memory and do not scan repositories, read files, write
 files, run commands, call LLMs, or apply patches.
 
+## Repository Scan Summary API
+
+Milestone 22 exposes the deterministic repository scanner through a safe
+read-only endpoint:
+
+- `POST /repositories/scan-summary`
+- Accepts `root_path`
+- Returns repository summary metadata and relative file summaries
+- Omits SHA-256 hashes and file contents from the API response
+- Does not chunk files, run retrieval, call LLMs, run commands, apply patches,
+  or write files
+
 ## Current Scope
 
 Included:
@@ -644,6 +672,7 @@ Included:
 - Agent run reports for CLI/API/demo/PR summaries
 - CLI demo command for printing a sample run report
 - Reporting API demo endpoints for JSON and Markdown summaries
+- Repository scan summary API endpoint
 
 Not included yet:
 
