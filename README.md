@@ -18,9 +18,10 @@ structured failure analysis, and a bounded self-correction orchestrator that can
 try supplied repair proposals. It can also ask an injected `LLMClient` to
 produce a repair `PatchProposal` from a failed attempt, failure analysis, and
 read-only file context, then package that repair as an approval request. These
-pieces are intentionally separate from any real LLM, embedding, vector database,
-autonomous file editing agent, arbitrary shell execution, or unapproved patch
-application.
+pieces can also be summarized into structured run reports for CLI, API, demo,
+or PR-summary use. They are intentionally separate from any real LLM, embedding,
+vector database, autonomous file editing agent, arbitrary shell execution, or
+unapproved patch application.
 
 ## Requirements
 
@@ -537,6 +538,34 @@ print(approval_request.approval_required)
 print(approval_request.repair_proposal.summary)
 ```
 
+## Agent Run Report
+
+Milestone 19 turns RepoPilot outputs into a structured report suitable for CLI,
+API, demos, and PR summaries:
+
+- Accepts an issue plus optional plan, proposal, validation, failure,
+  self-correction, and repair approval objects
+- Derives a deterministic run status
+- Extracts planned, proposed, and changed files
+- Reports validation and approval state
+- Produces a readable Markdown summary
+- Does not call LLMs, run commands, read files, write files, or apply patches
+
+Example usage:
+
+```python
+from repopilot.reporting import create_agent_run_report
+
+report = create_agent_run_report(
+    issue="Fix login bug",
+    plan=plan,
+    patch_proposal=proposal,
+    validation_result=validation_result,
+)
+print(report.status)
+print(report.markdown_summary)
+```
+
 ## Current Scope
 
 Included:
@@ -567,6 +596,7 @@ Included:
 - Self-correction orchestrator for bounded approved repair attempts
 - LLM repair proposal generator using injected fake/test clients
 - Approval-gated repair workflow for generated repair proposals
+- Agent run reports for CLI/API/demo/PR summaries
 
 Not included yet:
 
