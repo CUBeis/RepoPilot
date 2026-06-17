@@ -65,6 +65,12 @@ Open the health endpoint:
 http://127.0.0.1:8000/health
 ```
 
+Open the interactive API docs:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
 Expected response:
 
 ```json
@@ -102,6 +108,15 @@ running commands, or writing files:
 
 ```powershell
 repopilot report-demo
+```
+
+## Run Reporting API Demo
+
+With the FastAPI server running, open the safe in-memory reporting demos:
+
+```text
+http://127.0.0.1:8000/report-demo
+http://127.0.0.1:8000/report-demo/markdown
 ```
 
 ## Repository Scanner
@@ -586,6 +601,16 @@ repopilot report-demo
 The command builds an in-memory sample run report and prints its Markdown
 summary. It is read-only and does not execute agent tools.
 
+## Reporting API Endpoints
+
+Milestone 21 exposes the same kind of safe sample run report through FastAPI:
+
+- `GET /report-demo` returns the sample `AgentRunReport` as JSON
+- `GET /report-demo/markdown` returns the sample Markdown summary as plain text
+
+Both endpoints are in-memory and do not scan repositories, read files, write
+files, run commands, call LLMs, or apply patches.
+
 ## Current Scope
 
 Included:
@@ -618,6 +643,7 @@ Included:
 - Approval-gated repair workflow for generated repair proposals
 - Agent run reports for CLI/API/demo/PR summaries
 - CLI demo command for printing a sample run report
+- Reporting API demo endpoints for JSON and Markdown summaries
 
 Not included yet:
 
