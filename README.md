@@ -154,6 +154,25 @@ Example JSON body:
 }
 ```
 
+## Run Planning Preview API Demo
+
+With the FastAPI server running, request a deterministic implementation plan
+preview:
+
+```text
+POST http://127.0.0.1:8000/repositories/plan-preview
+```
+
+Example JSON body:
+
+```json
+{
+  "root_path": "D:/RepoPilot",
+  "issue": "Improve repository scanner error handling",
+  "top_k": 5
+}
+```
+
 ## Repository Scanner
 
 Milestone 2 adds deterministic local repository scanning:
@@ -670,6 +689,20 @@ Milestone 23 exposes a safe read-only context preview endpoint:
 - Does not call LLMs, plan changes, propose patches, run commands, or write
   files
 
+## Planning Preview API
+
+Milestone 24 exposes a safe read-only deterministic planning endpoint:
+
+- `POST /repositories/plan-preview`
+- Accepts `root_path`, `issue`, and `top_k`
+- Builds repository context through the existing scan, chunk, and retrieval
+  pipeline
+- Creates a deterministic `ImplementationPlan`
+- Returns plan steps, relevant files, risks, assumptions, confidence, and basic
+  context metadata
+- Does not call LLMs, propose patches, apply patches, run commands, expose file
+  contents, or write files
+
 ## Current Scope
 
 Included:
@@ -705,6 +738,7 @@ Included:
 - Reporting API demo endpoints for JSON and Markdown summaries
 - Repository scan summary API endpoint
 - Context preview API endpoint with bounded chunk previews
+- Planning preview API endpoint with deterministic implementation plans
 
 Not included yet:
 
