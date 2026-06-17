@@ -15,9 +15,11 @@ prepare approval-gated patch proposals, including proposals generated through
 the LLM client abstraction, and safely apply approved proposals. It now includes
 a safe command runner for approved validation commands, a validation pipeline,
 structured failure analysis, and a bounded self-correction orchestrator that can
-try supplied repair proposals. These pieces are intentionally separate from any
-real LLM, embedding, vector database, autonomous file editing agent, arbitrary
-shell execution, or internally generated repairs.
+try supplied repair proposals. It can also ask an injected `LLMClient` to
+produce a repair `PatchProposal` from a failed attempt, failure analysis, and
+read-only file context. These pieces are intentionally separate from any real
+LLM, embedding, vector database, autonomous file editing agent, arbitrary shell
+execution, or unapproved patch application.
 
 ## Requirements
 
@@ -481,6 +483,34 @@ result = run_self_correction_loop(
 print(result.final_passed, result.stopped_reason)
 ```
 
+## LLM Repair Proposal Generator
+
+Milestone 17 turns a failed validation attempt into a new structured repair
+proposal through an injected `LLMClient`:
+
+- Accepts a failed `SelfCorrectionAttempt`
+- Includes `FailureAnalysis` and read-only file context in the prompt
+- Expects JSON that matches the existing `PatchProposal` schema
+- Forces `requires_approval=True`
+- Allows extra read-only context, but only permits proposed changes for files
+  targeted by the failed attempt and actually read
+- Does not apply patches, run commands, or call real providers
+
+Example usage with `FakeLLMClient`:
+
+```python
+from repopilot.agent import create_llm_repair_proposal
+from repopilot.llm import FakeLLMClient
+
+client = FakeLLMClient(fake_repair_json)
+repair_proposal = create_llm_repair_proposal(
+    failed_attempt,
+    file_reads,
+    client,
+)
+print(repair_proposal.requires_approval)
+```
+
 ## Current Scope
 
 Included:
@@ -509,6 +539,7 @@ Included:
 - Patch validation pipeline for apply -> validate workflows
 - Validation failure analyzer for structured failure summaries
 - Self-correction orchestrator for bounded approved repair attempts
+- LLM repair proposal generator using injected fake/test clients
 
 Not included yet:
 
@@ -516,4 +547,4 @@ Not included yet:
 - Real LLM provider calls
 - Vector database
 - Autonomous file editing agent
-- Autonomous repair proposal generation
+- Fully autonomous repair loops
