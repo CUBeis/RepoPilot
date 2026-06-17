@@ -12,15 +12,12 @@ builder, deterministic planning layer, and provider-independent LLM client
 abstraction. It can also create plans through an injected LLM client using a
 fake deterministic client in tests, read files through safe read-only tools, and
 prepare approval-gated patch proposals, including proposals generated through
-the LLM client abstraction, and safely apply approved proposals. These pieces
-are intentionally separate from any real LLM, embedding, vector database,
-autonomous file editing agent, test execution, or shell execution logic.
-It now includes a safe command runner foundation for approved validation
-commands, but it still does not self-correct or run autonomous agent loops.
-The current validation pipeline can apply an approved patch and run allowlisted
-checks, then report the result without attempting repairs.
-Validation failures can also be summarized into structured, agent-readable
-failure analysis, still without generating fixes.
+the LLM client abstraction, and safely apply approved proposals. It now includes
+a safe command runner for approved validation commands, a validation pipeline,
+structured failure analysis, and a bounded self-correction orchestrator that can
+try supplied repair proposals. These pieces are intentionally separate from any
+real LLM, embedding, vector database, autonomous file editing agent, arbitrary
+shell execution, or internally generated repairs.
 
 ## Requirements
 
@@ -458,6 +455,32 @@ print(analysis.summary)
 print(analysis.needs_self_correction)
 ```
 
+## Self-Correction Orchestrator
+
+Milestone 16 composes patch validation and failure analysis into a bounded retry
+loop:
+
+- Validates the initial patch proposal first
+- Analyzes validation failures into structured summaries
+- Optionally tries supplied repair proposals
+- Stops when validation passes, `max_attempts` is reached, or no repair proposal
+  is available
+- Does not generate repairs, call LLMs, or expand command permissions
+
+Example usage:
+
+```python
+from repopilot.agent import run_self_correction_loop
+
+result = run_self_correction_loop(
+    "D:/RepoPilot",
+    proposal,
+    approved=True,
+    repair_proposals=[repair_proposal],
+)
+print(result.final_passed, result.stopped_reason)
+```
+
 ## Current Scope
 
 Included:
@@ -485,6 +508,7 @@ Included:
 - Safe command runner for allowlisted validation commands
 - Patch validation pipeline for apply -> validate workflows
 - Validation failure analyzer for structured failure summaries
+- Self-correction orchestrator for bounded approved repair attempts
 
 Not included yet:
 
@@ -492,4 +516,4 @@ Not included yet:
 - Real LLM provider calls
 - Vector database
 - Autonomous file editing agent
-- Test self-correction loop
+- Autonomous repair proposal generation
