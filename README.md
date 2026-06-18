@@ -270,6 +270,53 @@ This endpoint mutates files only when `approved=true`. Validation commands are
 allowlisted exactly from the requested command list or the default validation
 pipeline commands.
 
+## Run Failure Analysis API Demo
+
+With the FastAPI server running, analyze an apply-and-validate style result:
+
+```text
+POST http://127.0.0.1:8000/validation/analyze-failures
+```
+
+Example JSON body:
+
+```json
+{
+  "max_excerpt_chars": 1000,
+  "validation_result": {
+    "apply_result": {
+      "applied_files": [
+        {
+          "path": "src/app.py",
+          "old_content": "print('old')\n",
+          "new_content": "print('new')\n",
+          "changed": true
+        }
+      ],
+      "changed_file_count": 1
+    },
+    "checks": [
+      {
+        "name": "pytest",
+        "command": ["pytest"],
+        "result": {
+          "command": ["pytest"],
+          "return_code": 1,
+          "stdout": "test output",
+          "stderr": "failure output",
+          "timed_out": false
+        },
+        "passed": false
+      }
+    ],
+    "passed": false
+  }
+}
+```
+
+This endpoint is read-only. It does not mutate files, rerun validation commands,
+call LLMs, or generate repairs.
+
 ## Repository Scanner
 
 Milestone 2 adds deterministic local repository scanning:
@@ -843,6 +890,18 @@ Milestone 27 exposes an approval-gated apply-and-validate endpoint:
 - Does not call LLMs, generate repairs, start self-correction, or run failure
   analysis automatically
 
+## Failure Analysis API
+
+Milestone 28 exposes a read-only validation failure analysis endpoint:
+
+- `POST /validation/analyze-failures`
+- Accepts a `PatchValidationResult` payload and `max_excerpt_chars`
+- Returns structured failed-check summaries
+- Bounds stdout/stderr excerpts
+- Does not expose old or new file contents in the response
+- Does not run commands, apply patches, read files, write files, call LLMs,
+  generate repairs, or start self-correction
+
 ## Current Scope
 
 Included:
@@ -882,6 +941,7 @@ Included:
 - Patch proposal preview API endpoint with bounded approval-gated previews
 - Approval-gated patch apply API endpoint
 - Approval-gated apply-and-validate API endpoint
+- Validation failure analysis API endpoint
 
 Not included yet:
 
