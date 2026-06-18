@@ -173,6 +173,27 @@ Example JSON body:
 }
 ```
 
+## Run Patch Preview API Demo
+
+With the FastAPI server running, request a deterministic patch proposal preview:
+
+```text
+POST http://127.0.0.1:8000/repositories/patch-preview
+```
+
+Example JSON body:
+
+```json
+{
+  "root_path": "D:/RepoPilot",
+  "issue": "Improve repository scanner error handling",
+  "top_k": 5,
+  "max_preview_chars": 500
+}
+```
+
+This endpoint creates a preview only. It does not apply patches.
+
 ## Repository Scanner
 
 Milestone 2 adds deterministic local repository scanning:
@@ -703,6 +724,19 @@ Milestone 24 exposes a safe read-only deterministic planning endpoint:
 - Does not call LLMs, propose patches, apply patches, run commands, expose file
   contents, or write files
 
+## Patch Preview API
+
+Milestone 25 exposes a safe deterministic patch proposal preview endpoint:
+
+- `POST /repositories/patch-preview`
+- Accepts `root_path`, `issue`, `top_k`, and `max_preview_chars`
+- Builds repository context and a deterministic implementation plan
+- Reads planned files only through the safe read-only file tool
+- Creates a deterministic approval-gated `PatchProposal`
+- Returns bounded original/proposed content previews
+- Does not call LLMs, apply patches, run validation commands, run shell
+  commands, expose hashes, expose unbounded file contents, or write files
+
 ## Current Scope
 
 Included:
@@ -739,6 +773,7 @@ Included:
 - Repository scan summary API endpoint
 - Context preview API endpoint with bounded chunk previews
 - Planning preview API endpoint with deterministic implementation plans
+- Patch proposal preview API endpoint with bounded approval-gated previews
 
 Not included yet:
 
