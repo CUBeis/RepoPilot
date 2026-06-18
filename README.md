@@ -194,6 +194,42 @@ Example JSON body:
 
 This endpoint creates a preview only. It does not apply patches.
 
+## Run Patch Apply API Demo
+
+With the FastAPI server running, apply an already reviewed patch proposal:
+
+```text
+POST http://127.0.0.1:8000/patches/apply
+```
+
+Example JSON body:
+
+```json
+{
+  "root_path": "D:/RepoPilot",
+  "approved": true,
+  "proposal": {
+    "summary": "Update app output.",
+    "target_files": ["src/app.py"],
+    "changes": [
+      {
+        "path": "src/app.py",
+        "reason": "Reviewed change.",
+        "start_line": 1,
+        "end_line": 1,
+        "original_content": "print('old')\n",
+        "proposed_content": "print('new')\n"
+      }
+    ],
+    "risks": ["May affect app output."],
+    "requires_approval": true
+  }
+}
+```
+
+This endpoint mutates files only when `approved=true` and the proposal also
+requires approval. Validation commands remain a separate workflow.
+
 ## Repository Scanner
 
 Milestone 2 adds deterministic local repository scanning:
@@ -737,6 +773,20 @@ Milestone 25 exposes a safe deterministic patch proposal preview endpoint:
 - Does not call LLMs, apply patches, run validation commands, run shell
   commands, expose hashes, expose unbounded file contents, or write files
 
+## Patch Apply API
+
+Milestone 26 exposes the first approval-gated mutating API endpoint:
+
+- `POST /patches/apply`
+- Accepts `root_path`, a reviewed `PatchProposal`, and explicit `approved`
+- Applies only through the existing safe patch applier
+- Requires `approved=true`
+- Requires `proposal.requires_approval=true`
+- Returns only changed file summaries
+- Does not expose old or new file contents in the response
+- Does not run validation commands, call LLMs, run shell commands, generate
+  repairs, or start self-correction
+
 ## Current Scope
 
 Included:
@@ -774,6 +824,7 @@ Included:
 - Context preview API endpoint with bounded chunk previews
 - Planning preview API endpoint with deterministic implementation plans
 - Patch proposal preview API endpoint with bounded approval-gated previews
+- Approval-gated patch apply API endpoint
 
 Not included yet:
 

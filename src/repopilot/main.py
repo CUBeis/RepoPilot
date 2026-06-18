@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from repopilot.api.apply import router as apply_router
 from repopilot.api.context import router as context_router
 from repopilot.api.health import router as health_router
 from repopilot.api.patches import router as patches_router
@@ -13,6 +14,7 @@ def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     settings = get_settings()
     app = FastAPI(title=settings.app_name, version=settings.app_version)
+    app.include_router(apply_router)
     app.include_router(context_router)
     app.include_router(health_router)
     app.include_router(patches_router)
