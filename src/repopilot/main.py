@@ -7,6 +7,7 @@ from repopilot.api.patches import router as patches_router
 from repopilot.api.planning import router as planning_router
 from repopilot.api.reporting import router as reporting_router
 from repopilot.api.repositories import router as repositories_router
+from repopilot.api.validation import router as validation_router
 from repopilot.core.config import get_settings
 
 
@@ -21,6 +22,7 @@ def create_app() -> FastAPI:
     app.include_router(planning_router)
     app.include_router(repositories_router)
     app.include_router(reporting_router)
+    app.include_router(validation_router)
     return app
 
 

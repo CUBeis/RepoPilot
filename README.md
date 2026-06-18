@@ -230,6 +230,46 @@ Example JSON body:
 This endpoint mutates files only when `approved=true` and the proposal also
 requires approval. Validation commands remain a separate workflow.
 
+## Run Apply-And-Validate API Demo
+
+With the FastAPI server running, apply an already reviewed patch proposal and
+then run allowlisted validation commands:
+
+```text
+POST http://127.0.0.1:8000/patches/apply-and-validate
+```
+
+Example JSON body:
+
+```json
+{
+  "root_path": "D:/RepoPilot",
+  "approved": true,
+  "validation_commands": [["pytest"], ["ruff", "check", "."]],
+  "timeout_seconds": 30,
+  "proposal": {
+    "summary": "Update app output.",
+    "target_files": ["src/app.py"],
+    "changes": [
+      {
+        "path": "src/app.py",
+        "reason": "Reviewed change.",
+        "start_line": 1,
+        "end_line": 1,
+        "original_content": "print('old')\n",
+        "proposed_content": "print('new')\n"
+      }
+    ],
+    "risks": ["May affect app output."],
+    "requires_approval": true
+  }
+}
+```
+
+This endpoint mutates files only when `approved=true`. Validation commands are
+allowlisted exactly from the requested command list or the default validation
+pipeline commands.
+
 ## Repository Scanner
 
 Milestone 2 adds deterministic local repository scanning:
@@ -787,6 +827,22 @@ Milestone 26 exposes the first approval-gated mutating API endpoint:
 - Does not run validation commands, call LLMs, run shell commands, generate
   repairs, or start self-correction
 
+## Apply-And-Validate API
+
+Milestone 27 exposes an approval-gated apply-and-validate endpoint:
+
+- `POST /patches/apply-and-validate`
+- Accepts `root_path`, a reviewed `PatchProposal`, explicit `approved`,
+  optional `validation_commands`, and `timeout_seconds`
+- Applies only through the existing validation pipeline and safe patch applier
+- Runs validation commands through the safe command runner
+- Uses requested validation commands as the exact allowlist, or the validation
+  pipeline defaults
+- Returns bounded stdout/stderr previews
+- Does not expose old or new file contents
+- Does not call LLMs, generate repairs, start self-correction, or run failure
+  analysis automatically
+
 ## Current Scope
 
 Included:
@@ -825,6 +881,7 @@ Included:
 - Planning preview API endpoint with deterministic implementation plans
 - Patch proposal preview API endpoint with bounded approval-gated previews
 - Approval-gated patch apply API endpoint
+- Approval-gated apply-and-validate API endpoint
 
 Not included yet:
 
