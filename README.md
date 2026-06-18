@@ -317,6 +317,102 @@ Example JSON body:
 This endpoint is read-only. It does not mutate files, rerun validation commands,
 call LLMs, or generate repairs.
 
+## Run Repair Approval API Demo
+
+With the FastAPI server running, prepare a repair proposal for human approval:
+
+```text
+POST http://127.0.0.1:8000/repairs/approval-request
+```
+
+Example JSON body:
+
+```json
+{
+  "llm_response_json": "{\"summary\":\"Repair login behavior.\",\"target_files\":[\"src/auth.py\"],\"changes\":[{\"path\":\"src/auth.py\",\"reason\":\"Return the expected boolean value.\",\"start_line\":1,\"end_line\":2,\"original_content\":\"def login_user():\\n    return False\\n\",\"proposed_content\":\"def login_user():\\n    return True\\n\"}],\"risks\":[\"May affect authentication flow.\"],\"requires_approval\":false}",
+  "model": "fake-repair-proposer",
+  "temperature": 0.0,
+  "max_tokens": 700,
+  "file_reads": [
+    {
+      "path": "src/auth.py",
+      "start_line": 1,
+      "end_line": 2,
+      "content": "def login_user():\n    return False\n",
+      "total_lines": 2,
+      "size_bytes": 35
+    }
+  ],
+  "failed_attempt": {
+    "attempt_number": 1,
+    "proposal": {
+      "summary": "Initial login patch failed.",
+      "target_files": ["src/auth.py"],
+      "changes": [
+        {
+          "path": "src/auth.py",
+          "reason": "Make login return success.",
+          "start_line": 1,
+          "end_line": 2,
+          "original_content": "def login_user():\n    return False\n",
+          "proposed_content": "def login_user():\n    return 'yes'\n"
+        }
+      ],
+      "risks": ["May affect authentication flow."],
+      "requires_approval": true
+    },
+    "validation_result": {
+      "apply_result": {
+        "applied_files": [
+          {
+            "path": "src/auth.py",
+            "old_content": "def login_user():\n    return False\n",
+            "new_content": "def login_user():\n    return 'yes'\n",
+            "changed": true
+          }
+        ],
+        "changed_file_count": 1
+      },
+      "checks": [
+        {
+          "name": "pytest",
+          "command": ["pytest"],
+          "result": {
+            "command": ["pytest"],
+            "return_code": 1,
+            "stdout": "login test failed",
+            "stderr": "",
+            "timed_out": false
+          },
+          "passed": false
+        }
+      ],
+      "passed": false
+    },
+    "failure_analysis": {
+      "passed": false,
+      "failed_check_count": 1,
+      "failed_checks": [
+        {
+          "name": "pytest",
+          "command": ["pytest"],
+          "return_code": 1,
+          "timed_out": false,
+          "stdout_excerpt": "pytest failed for login test",
+          "stderr_excerpt": ""
+        }
+      ],
+      "summary": "1 validation check failed: pytest failed for login test",
+      "needs_self_correction": true
+    }
+  }
+}
+```
+
+This milestone uses fake LLM response JSON for deterministic behavior. The
+endpoint returns an approval request and does not mutate files, run commands, or
+apply the repair proposal.
+
 ## Repository Scanner
 
 Milestone 2 adds deterministic local repository scanning:
@@ -902,6 +998,19 @@ Milestone 28 exposes a read-only validation failure analysis endpoint:
 - Does not run commands, apply patches, read files, write files, call LLMs,
   generate repairs, or start self-correction
 
+## Repair Approval API
+
+Milestone 29 exposes a repair approval request endpoint:
+
+- `POST /repairs/approval-request`
+- Accepts a failed `SelfCorrectionAttempt`, read-only `FileReadResult` objects,
+  and fake LLM response JSON
+- Uses `FakeLLMClient` for deterministic API behavior
+- Delegates to the existing approval-gated repair workflow
+- Forces the returned repair proposal to require approval
+- Does not apply patches, run validation commands, run shell commands, read from
+  disk, write files, call real LLM providers, or start self-correction
+
 ## Current Scope
 
 Included:
@@ -942,6 +1051,7 @@ Included:
 - Approval-gated patch apply API endpoint
 - Approval-gated apply-and-validate API endpoint
 - Validation failure analysis API endpoint
+- Repair approval request API endpoint using fake LLM response JSON
 
 Not included yet:
 
