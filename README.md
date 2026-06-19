@@ -539,6 +539,25 @@ This endpoint is reporting-only. It does not scan repositories, build context,
 create plans, apply patches, run commands, call LLMs, generate repairs, start
 self-correction, read files, or write files.
 
+## Run Demo Workflow API
+
+With the FastAPI server running, open a deterministic in-memory successful
+workflow demo:
+
+```text
+GET http://127.0.0.1:8000/demo/workflow
+```
+
+This endpoint returns a full `WorkflowReportResponse` showing:
+
+```text
+plan -> patch proposed -> applied -> validation passed -> workflow report
+```
+
+It is fully in-memory and safe for demos. It does not scan repositories, read
+files, write files, apply patches, run commands, call LLMs, generate repairs, or
+start self-correction.
+
 ## Repository Scanner
 
 Milestone 2 adds deterministic local repository scanning:
@@ -1165,6 +1184,18 @@ Milestone 32 exposes a unified read-only workflow reporting endpoint:
   commands, call LLMs, generate repairs, read files, write files, or start
   self-correction
 
+## Demo Workflow API
+
+Milestone 33 exposes a deterministic in-memory demo workflow endpoint:
+
+- `GET /demo/workflow`
+- Returns a successful `WorkflowReportResponse`
+- Demonstrates plan -> patch proposed -> applied -> validation passed -> report
+- Reuses the shared workflow report builder
+- Does not expose old/new content or validation output previews
+- Does not scan repositories, read files, write files, apply patches, run
+  commands, call LLMs, generate repairs, or start self-correction
+
 ## Current Scope
 
 Included:
@@ -1209,6 +1240,7 @@ Included:
 - Approval-gated repair apply API endpoint with optional validation
 - Repair apply result report API endpoint
 - Unified workflow report API endpoint
+- Deterministic in-memory demo workflow endpoint
 
 Not included yet:
 

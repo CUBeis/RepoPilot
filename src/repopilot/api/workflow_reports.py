@@ -16,6 +16,14 @@ def create_workflow_report(
 ) -> WorkflowReportResponse:
     """Create a read-only report from supplied workflow payloads."""
 
+    return build_workflow_report(request)
+
+
+def build_workflow_report(
+    request: WorkflowReportRequest,
+) -> WorkflowReportResponse:
+    """Build a deterministic workflow report without executing tools."""
+
     status = _resolve_status(request)
     validation_ran, validation_passed = _resolve_validation_state(request)
     response = WorkflowReportResponse(
