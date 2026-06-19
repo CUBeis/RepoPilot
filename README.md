@@ -17,11 +17,12 @@ a safe command runner for approved validation commands, a validation pipeline,
 structured failure analysis, and a bounded self-correction orchestrator that can
 try supplied repair proposals. It can also ask an injected `LLMClient` to
 produce a repair `PatchProposal` from a failed attempt, failure analysis, and
-read-only file context, then package that repair as an approval request. These
-pieces can also be summarized into structured run reports for CLI, API, demo,
-or PR-summary use. They are intentionally separate from any real LLM, embedding,
-vector database, autonomous file editing agent, arbitrary shell execution, or
-unapproved patch application.
+read-only file context, package that repair as an approval request, and apply a
+reviewed repair proposal only after explicit approval. These pieces can also be
+summarized into structured run reports for CLI, API, demo, or PR-summary use.
+They are intentionally separate from any real LLM, embedding, vector database,
+autonomous file editing agent, arbitrary shell execution, or unapproved patch
+application.
 
 ## Requirements
 
@@ -412,6 +413,46 @@ Example JSON body:
 This milestone uses fake LLM response JSON for deterministic behavior. The
 endpoint returns an approval request and does not mutate files, run commands, or
 apply the repair proposal.
+
+## Run Repair Apply API Demo
+
+With the FastAPI server running, apply an already reviewed repair proposal:
+
+```text
+POST http://127.0.0.1:8000/repairs/apply-approved
+```
+
+Example JSON body:
+
+```json
+{
+  "root_path": "D:/RepoPilot",
+  "approved": true,
+  "run_validation": false,
+  "validation_commands": null,
+  "timeout_seconds": 30,
+  "repair_proposal": {
+    "summary": "Repair login behavior.",
+    "target_files": ["src/auth.py"],
+    "changes": [
+      {
+        "path": "src/auth.py",
+        "reason": "Reviewed repair.",
+        "start_line": 1,
+        "end_line": 2,
+        "original_content": "def login_user():\n    return False\n",
+        "proposed_content": "def login_user():\n    return True\n"
+      }
+    ],
+    "risks": ["May affect authentication flow."],
+    "requires_approval": true
+  }
+}
+```
+
+This endpoint mutates files only when `approved=true` and the repair proposal
+also requires approval. Validation is optional; set `run_validation=true` and
+provide allowlisted `validation_commands` to run checks after applying.
 
 ## Repository Scanner
 
@@ -1052,6 +1093,7 @@ Included:
 - Approval-gated apply-and-validate API endpoint
 - Validation failure analysis API endpoint
 - Repair approval request API endpoint using fake LLM response JSON
+- Approval-gated repair apply API endpoint with optional validation
 
 Not included yet:
 
