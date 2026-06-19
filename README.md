@@ -18,9 +18,10 @@ structured failure analysis, and a bounded self-correction orchestrator that can
 try supplied repair proposals. It can also ask an injected `LLMClient` to
 produce a repair `PatchProposal` from a failed attempt, failure analysis, and
 read-only file context, package that repair as an approval request, and apply a
-reviewed repair proposal only after explicit approval. These pieces can also be
-summarized into structured run reports for CLI, API, demo, or PR-summary use.
-They are intentionally separate from any real LLM, embedding, vector database,
+reviewed repair proposal only after explicit approval. It can also summarize
+repair apply results into demo-friendly reports. These pieces can be summarized
+into structured run reports for CLI, API, demo, or PR-summary use. They are
+intentionally separate from any real LLM, embedding, vector database,
 autonomous file editing agent, arbitrary shell execution, or unapproved patch
 application.
 
@@ -453,6 +454,50 @@ Example JSON body:
 This endpoint mutates files only when `approved=true` and the repair proposal
 also requires approval. Validation is optional; set `run_validation=true` and
 provide allowlisted `validation_commands` to run checks after applying.
+
+## Run Repair Apply Report API Demo
+
+With the FastAPI server running, summarize a repair apply response:
+
+```text
+POST http://127.0.0.1:8000/reports/repair-apply-result
+```
+
+Example JSON body:
+
+```json
+{
+  "issue": "Fix login bug",
+  "repair_summary": "Repair login behavior.",
+  "repair_result": {
+    "changed_file_count": 1,
+    "applied_files": [
+      {
+        "path": "src/auth.py",
+        "changed": true
+      }
+    ],
+    "validation": {
+      "passed": true,
+      "checks": [
+        {
+          "name": "pytest",
+          "command": ["pytest"],
+          "return_code": 0,
+          "timed_out": false,
+          "stdout_preview": "tests passed",
+          "stderr_preview": "",
+          "passed": true
+        }
+      ]
+    }
+  }
+}
+```
+
+This endpoint is reporting-only. It summarizes supplied data and does not mutate
+files, run validation commands, call LLMs, generate repairs, or start
+self-correction.
 
 ## Repository Scanner
 
@@ -1052,6 +1097,19 @@ Milestone 29 exposes a repair approval request endpoint:
 - Does not apply patches, run validation commands, run shell commands, read from
   disk, write files, call real LLM providers, or start self-correction
 
+## Repair Apply Result Report API
+
+Milestone 31 exposes a read-only repair apply reporting endpoint:
+
+- `POST /reports/repair-apply-result`
+- Accepts an issue, repair summary, and `RepairApplyResponse` payload
+- Returns status, changed files, validation metadata, failed checks, and a
+  Markdown summary
+- Distinguishes direct repair apply from apply-and-validate results
+- Does not expose old/new file contents or validation output previews
+- Does not apply patches, run commands, call LLMs, generate repairs, read files,
+  write files, or start self-correction
+
 ## Current Scope
 
 Included:
@@ -1094,6 +1152,7 @@ Included:
 - Validation failure analysis API endpoint
 - Repair approval request API endpoint using fake LLM response JSON
 - Approval-gated repair apply API endpoint with optional validation
+- Repair apply result report API endpoint
 
 Not included yet:
 

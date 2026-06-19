@@ -7,6 +7,7 @@ from repopilot.api.health import router as health_router
 from repopilot.api.patches import router as patches_router
 from repopilot.api.planning import router as planning_router
 from repopilot.api.repair_apply import router as repair_apply_router
+from repopilot.api.repair_reports import router as repair_reports_router
 from repopilot.api.repairs import router as repairs_router
 from repopilot.api.reporting import router as reporting_router
 from repopilot.api.repositories import router as repositories_router
@@ -25,6 +26,7 @@ def create_app() -> FastAPI:
     app.include_router(patches_router)
     app.include_router(planning_router)
     app.include_router(repair_apply_router)
+    app.include_router(repair_reports_router)
     app.include_router(repairs_router)
     app.include_router(repositories_router)
     app.include_router(reporting_router)
