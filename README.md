@@ -499,6 +499,46 @@ This endpoint is reporting-only. It summarizes supplied data and does not mutate
 files, run validation commands, call LLMs, generate repairs, or start
 self-correction.
 
+## Run Workflow Report API Demo
+
+With the FastAPI server running, summarize supplied workflow payloads into one
+PR-ready report:
+
+```text
+POST http://127.0.0.1:8000/reports/workflow
+```
+
+Example JSON body:
+
+```json
+{
+  "issue": "Fix login bug",
+  "plan": null,
+  "patch_proposal": null,
+  "apply_result": null,
+  "validation_result": null,
+  "failure_analysis": null,
+  "repair_approval": null,
+  "repair_apply_report": {
+    "status": "repair_applied_validation_passed",
+    "issue": "Fix login bug",
+    "summary": "Repair login behavior.",
+    "changed_file_count": 1,
+    "changed_files": ["src/auth.py"],
+    "validation_ran": true,
+    "validation_passed": true,
+    "validation_check_count": 1,
+    "failed_check_count": 0,
+    "failed_checks": [],
+    "markdown_summary": "# RepoPilot Repair Apply Report"
+  }
+}
+```
+
+This endpoint is reporting-only. It does not scan repositories, build context,
+create plans, apply patches, run commands, call LLMs, generate repairs, start
+self-correction, read files, or write files.
+
 ## Repository Scanner
 
 Milestone 2 adds deterministic local repository scanning:
@@ -1110,6 +1150,21 @@ Milestone 31 exposes a read-only repair apply reporting endpoint:
 - Does not apply patches, run commands, call LLMs, generate repairs, read files,
   write files, or start self-correction
 
+## Workflow Report API
+
+Milestone 32 exposes a unified read-only workflow reporting endpoint:
+
+- `POST /reports/workflow`
+- Accepts supplied plan, proposal, apply, validation, failure, repair approval,
+  and repair apply report payloads
+- Returns one status, file summary, validation summary, repair flags, and
+  Markdown report
+- Uses deterministic status priority when multiple payloads are supplied
+- Does not expose old/new content or validation output previews
+- Does not scan repositories, build context, create plans, apply patches, run
+  commands, call LLMs, generate repairs, read files, write files, or start
+  self-correction
+
 ## Current Scope
 
 Included:
@@ -1153,6 +1208,7 @@ Included:
 - Repair approval request API endpoint using fake LLM response JSON
 - Approval-gated repair apply API endpoint with optional validation
 - Repair apply result report API endpoint
+- Unified workflow report API endpoint
 
 Not included yet:
 
