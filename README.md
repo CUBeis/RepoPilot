@@ -157,7 +157,9 @@ understanding, retrieval, planning, and patch preview without mutating files.
 - [API examples](docs/api_examples.md)
 - [Interview script](docs/interview_script.md)
 - [Architecture summary](docs/architecture_summary.md)
+- [Release checklist](docs/release_checklist.md)
 - [Learning notes](docs/learning_notes/)
+- [Changelog](CHANGELOG.md)
 
 ## Portfolio Value
 
@@ -180,3 +182,10 @@ RepoPilot does not yet include real provider integrations, embeddings, a vector
 database, a frontend, authentication, Docker deployment, or autonomous
 end-to-end repair generation. Those are intentionally deferred until the safety
 contracts and deterministic workflow layers are solid.
+
+## v1.0 Readiness
+
+RepoPilot is v1.0-ready as a portfolio/demo backend. The public presentation
+surface includes a polished README, demo guide, API examples, interview script,
+architecture summary, changelog, release checklist, and a fully passing test and
+Ruff baseline.
