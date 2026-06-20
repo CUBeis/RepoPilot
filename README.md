@@ -75,7 +75,7 @@ It helps transform a raw codebase into a clearer, more understandable project ex
 
 ## Live Demo
 
-> Add your deployed demo link here after deployment.
+(will add it later)
 
 ```txt
 Demo URL: https://your-demo-link.vercel.app
@@ -484,25 +484,21 @@ This separation makes the project more reliable and safer for public demos.
 
 ## Screenshots
 
-> Add screenshots inside an `assets/` folder, then update the image paths below.
 
 ### Home Screen
 
-```md
-![RepoPilot Home](assets/repopilot-home.png)
-```
+[RepoPilot Home](assets/repopilot-home.png)
+
 
 ### Demo Mode
 
-```md
-![RepoPilot Demo Mode](assets/repopilot-demo-mode.png)
-```
+[RepoPilot Demo Mode](assets/repopilot-demo-mode.png)
 
 ### Repository Analysis
 
-```md
-![RepoPilot Analysis](assets/repopilot-analysis.png)
-```
+
+[RepoPilot Analysis](assets/repopilot-analysis.png)
+
 
 ---
 
@@ -709,8 +705,3 @@ RepoPilot is built to make repositories easier to understand, safer to demo, and
 It combines a clean backend, simple frontend, deterministic demo mode, optional AI support, strong testing, and security-aware project setup into one polished developer tool.
 
 
-```txt
-assets/repopilot-home.png
-assets/repopilot-demo-mode.png
-assets/repopilot-analysis.png
-```
