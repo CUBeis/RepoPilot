@@ -487,17 +487,16 @@ This separation makes the project more reliable and safer for public demos.
 
 ### Home Screen
 
-[RepoPilot Home](assets/repopilot-home.png)
+![RepoPilot Home](assets/repopilot-home.png)
 
 
 ### Demo Mode
 
-[RepoPilot Demo Mode](assets/repopilot-demo-mode.png)
+![RepoPilot Demo Mode](assets/repopilot-demo-mode.png)
 
 ### Repository Analysis
 
-
-[RepoPilot Analysis](assets/repopilot-analysis.png)
+![RepoPilot Analysis](assets/repopilot-analysis.png)
 
 
 ---
