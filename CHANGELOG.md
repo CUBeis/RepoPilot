@@ -12,6 +12,7 @@ All notable changes to RepoPilot are documented here.
   planning or OpenRouter-backed planning.
 - Bounded agent preview response with plan, optional patch proposal preview,
   Markdown summary, and explicit safety note.
+- Streamlit demo UI for running safe RepoPilot previews without Swagger or curl.
 
 ### Safety
 
@@ -19,6 +20,8 @@ All notable changes to RepoPilot are documented here.
   hardcoded or returned in API errors.
 - The agent preview endpoint does not apply patches, run commands, generate
   repairs, start self-correction, or write files.
+- The Streamlit UI calls existing safe endpoints and does not add hidden
+  mutation, command execution, repair generation, or self-correction.
 
 ## v1.0.0 - 2026-06-19
 

@@ -98,6 +98,34 @@ Run the CLI demo:
 repopilot report-demo
 ```
 
+## Streamlit Demo UI
+
+Start the FastAPI backend:
+
+```powershell
+uvicorn repopilot.main:app --reload
+```
+
+Start Streamlit in another terminal:
+
+```powershell
+streamlit run frontend/streamlit_app.py
+```
+
+The Streamlit UI is the friendliest demo surface. It calls the existing FastAPI
+endpoints and does not apply patches, run commands, generate repairs, or start
+self-correction.
+
+Use `use_llm=false` for the safest deterministic demo. Use `use_llm=true` only
+after setting OpenRouter variables in the FastAPI server environment:
+
+```powershell
+$env:OPENROUTER_API_KEY = "your-openrouter-key"
+$env:OPENROUTER_MODEL = "~openai/gpt-latest"
+$env:OPENROUTER_HTTP_REFERER = "https://github.com/CUBeis/RepoPilot"
+$env:OPENROUTER_APP_TITLE = "RepoPilot"
+```
+
 ### Optional OpenRouter Setup
 
 `POST /agent/preview` can use OpenRouter for LLM-backed planning. Set the API key
@@ -114,7 +142,17 @@ Only `OPENROUTER_API_KEY` is required. The other variables are optional.
 
 ## Suggested Demo Path
 
-Use Swagger at `http://127.0.0.1:8000/docs` and show this flow:
+Use Streamlit first, then Swagger at `http://127.0.0.1:8000/docs` if you want to
+show the raw API surface. In Streamlit, click:
+
+1. Overview -> `Check API Health`
+2. Demo Workflow -> `Run Safe Demo Workflow`
+3. Agent Preview -> `Run Agent Preview` with `use_llm=false`
+4. Repository Context -> `Retrieve Context`
+5. Plan Preview -> `Generate Deterministic Plan`
+6. Patch Preview -> `Generate Patch Preview`
+
+The equivalent Swagger flow is:
 
 1. `GET /health`
 2. `GET /demo/workflow`
