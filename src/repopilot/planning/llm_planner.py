@@ -73,10 +73,34 @@ def _build_llm_request(
 
 
 def _parse_response_json(content: str) -> object:
-    try:
-        return json.loads(content)
-    except json.JSONDecodeError as error:
-        raise LLMPlanningError("LLM response content was not valid JSON") from error
+    candidates = [content.strip()]
+    stripped_fence_content = _strip_markdown_fence(content)
+    if stripped_fence_content not in candidates:
+        candidates.append(stripped_fence_content)
+
+    for candidate in candidates:
+        if not candidate:
+            continue
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+
+    raise LLMPlanningError("LLM response content was not valid JSON")
+
+
+def _strip_markdown_fence(content: str) -> str:
+    lines = content.strip().splitlines()
+    if len(lines) < 2:
+        return content.strip()
+
+    first_line = lines[0].strip()
+    last_line = lines[-1].strip()
+    if first_line.startswith("```") and last_line == "```":
+        return "\n".join(lines[1:-1]).strip()
+
+    return content.strip()
+
 
 
 def _validate_plan(plan_data: object) -> ImplementationPlan:

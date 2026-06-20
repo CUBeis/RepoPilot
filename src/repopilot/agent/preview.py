@@ -4,7 +4,7 @@ from pathlib import Path
 
 from repopilot.context import build_repository_context
 from repopilot.context.models import RepositoryContext
-from repopilot.llm import OpenRouterLLMClient
+from repopilot.llm import create_configured_llm_client
 from repopilot.patching import (
     PatchProposal,
     PatchProposalError,
@@ -12,6 +12,7 @@ from repopilot.patching import (
 )
 from repopilot.planning import (
     ImplementationPlan,
+    LLMPlanningError,
     create_implementation_plan,
     create_llm_implementation_plan,
 )
@@ -49,7 +50,7 @@ def create_agent_preview(
         raise AgentPreviewError("issue must not be empty")
 
     context = build_repository_context(root_path, cleaned_issue, top_k=top_k)
-    plan = _create_plan(
+    plan, used_llm, mode_label = _create_plan(
         issue=cleaned_issue,
         context=context,
         use_llm=use_llm,
@@ -65,7 +66,7 @@ def create_agent_preview(
         root_name=context.root_name,
         scanned_file_count=context.scanned_file_count,
         retrieved_count=len(context.retrieved_chunks),
-        used_llm=use_llm,
+        used_llm=used_llm,
         plan=_plan_to_response(plan),
         patch_proposal=patch_proposal,
         markdown_summary=_build_markdown_summary(
@@ -73,7 +74,7 @@ def create_agent_preview(
             context=context,
             plan=plan,
             patch_proposal=patch_proposal,
-            used_llm=use_llm,
+            mode_label=mode_label,
         ),
         safety_note=AGENT_PREVIEW_SAFETY_NOTE,
     )
@@ -84,18 +85,26 @@ def _create_plan(
     issue: str,
     context: RepositoryContext,
     use_llm: bool,
-) -> ImplementationPlan:
+) -> tuple[ImplementationPlan, bool, str]:
     if not use_llm:
-        return create_implementation_plan(issue, context)
+        plan = create_implementation_plan(issue, context)
+        return plan, False, "deterministic planning"
 
-    llm_client = OpenRouterLLMClient.from_environment()
-    return create_llm_implementation_plan(
-        issue,
-        context,
-        llm_client,
-        model=llm_client.model,
-        temperature=0.0,
-    )
+    llm_client = create_configured_llm_client()
+    model = getattr(llm_client, "model", "configured-llm")
+    try:
+        plan = create_llm_implementation_plan(
+            issue,
+            context,
+            llm_client,
+            model=model,
+            temperature=0.0,
+        )
+    except LLMPlanningError:
+        fallback_plan = create_implementation_plan(issue, context)
+        return fallback_plan, False, "deterministic fallback after invalid LLM plan"
+
+    return plan, True, f"{_provider_label(llm_client)} LLM-backed planning"
 
 
 def _try_create_patch_preview(
@@ -173,9 +182,8 @@ def _build_markdown_summary(
     context: RepositoryContext,
     plan: ImplementationPlan,
     patch_proposal: PatchProposalPreviewResponse | None,
-    used_llm: bool,
+    mode_label: str,
 ) -> str:
-    mode = "OpenRouter LLM-backed planning" if used_llm else "deterministic planning"
     planned_files = _format_paths(plan.relevant_files)
     proposal_status = (
         "ready for review" if patch_proposal is not None else "not created"
@@ -189,7 +197,7 @@ def _build_markdown_summary(
             "",
             f"## Repository\n{context.root_name}",
             "",
-            f"## Mode\n{mode}",
+            f"## Mode\n{mode_label}",
             "",
             "## Context",
             f"- Scanned files: {context.scanned_file_count}",
@@ -213,3 +221,12 @@ def _format_paths(paths: list[str]) -> str:
     if not paths:
         return "none"
     return ", ".join(paths)
+
+
+def _provider_label(llm_client: object) -> str:
+    client_name = type(llm_client).__name__.lower()
+    if "openai" in client_name:
+        return "OpenAI"
+    if "openrouter" in client_name:
+        return "OpenRouter"
+    return "Configured provider"

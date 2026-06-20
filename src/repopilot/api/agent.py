@@ -2,7 +2,13 @@ from fastapi import APIRouter, HTTPException
 
 from repopilot.agent import AgentPreviewError, create_agent_preview
 from repopilot.context import ContextBuildError
-from repopilot.llm import OpenRouterConfigurationError, OpenRouterLLMError
+from repopilot.llm import (
+    LLMProviderConfigurationError,
+    OpenAIConfigurationError,
+    OpenAIProviderError,
+    OpenRouterConfigurationError,
+    OpenRouterLLMError,
+)
 from repopilot.planning import LLMPlanningError, PlanningError
 from repopilot.repository import RepositoryScanError
 from repopilot.schemas.agent import AgentPreviewRequest, AgentPreviewResponse
@@ -21,9 +27,13 @@ def preview_agent(request: AgentPreviewRequest) -> AgentPreviewResponse:
             max_preview_chars=request.max_preview_chars,
             use_llm=request.use_llm,
         )
-    except OpenRouterConfigurationError as error:
+    except (
+        LLMProviderConfigurationError,
+        OpenAIConfigurationError,
+        OpenRouterConfigurationError,
+    ) as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
-    except (OpenRouterLLMError, LLMPlanningError) as error:
+    except (OpenAIProviderError, OpenRouterLLMError, LLMPlanningError) as error:
         raise HTTPException(status_code=502, detail=str(error)) from error
     except (
         AgentPreviewError,

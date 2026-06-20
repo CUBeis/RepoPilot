@@ -95,6 +95,15 @@ def test_parses_valid_json_into_implementation_plan() -> None:
     assert plan.confidence == 0.8
 
 
+def test_parses_json_wrapped_in_markdown_fence() -> None:
+    client = FakeLLMClient(f"```json\n{make_plan_json()}\n```")
+
+    plan = create_llm_implementation_plan("Fix login bug", make_context(), client)
+
+    assert plan.objective == "Fix login bug"
+    assert plan.relevant_files == ["src/auth.py"]
+
+
 def test_rejects_invalid_json_with_clear_error() -> None:
     client = FakeLLMClient("not json")
 

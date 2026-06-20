@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from repopilot.llm import FakeLLMClient, OpenRouterLLMClient
+from repopilot.llm import FakeLLMClient, OpenAILLMClient, OpenRouterLLMClient
 from repopilot.llm.openrouter_client import OpenRouterLLMError
 from repopilot.main import app
 
@@ -65,6 +65,7 @@ def test_agent_preview_uses_openrouter_when_requested(
 ) -> None:
     _make_repo(tmp_path)
     llm_client = FakeOpenRouterClient(make_plan_json())
+    monkeypatch.setenv("REPOPILOT_LLM_PROVIDER", "openrouter")
     monkeypatch.setattr(
         OpenRouterLLMClient,
         "from_environment",
@@ -86,11 +87,40 @@ def test_agent_preview_uses_openrouter_when_requested(
     assert llm_client.last_request.model == "openrouter/fake"
 
 
+def test_agent_preview_uses_openai_when_requested(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _make_repo(tmp_path)
+    llm_client = FakeOpenAIClient(make_plan_json())
+    monkeypatch.setenv("REPOPILOT_LLM_PROVIDER", "openai")
+    monkeypatch.setattr(
+        OpenAILLMClient,
+        "from_environment",
+        staticmethod(lambda: llm_client),
+    )
+    client = TestClient(app)
+
+    response = client.post(
+        "/agent/preview",
+        json={"root_path": str(tmp_path), "issue": "Fix login validation"},
+    )
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["used_llm"] is True
+    assert body["plan"]["confidence"] == 0.8
+    assert body["patch_proposal"]["target_files"] == ["src/auth.py"]
+    assert llm_client.last_request is not None
+    assert llm_client.last_request.model == "openai/fake"
+
+
 def test_agent_preview_missing_openrouter_key_returns_400(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _make_repo(tmp_path)
+    monkeypatch.setenv("REPOPILOT_LLM_PROVIDER", "openrouter")
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     client = TestClient(app)
 
@@ -108,6 +138,7 @@ def test_agent_preview_provider_error_returns_502(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _make_repo(tmp_path)
+    monkeypatch.setenv("REPOPILOT_LLM_PROVIDER", "openrouter")
     monkeypatch.setattr(
         OpenRouterLLMClient,
         "from_environment",
@@ -124,12 +155,13 @@ def test_agent_preview_provider_error_returns_502(
     assert "provider unavailable" in response.json()["detail"]
 
 
-def test_agent_preview_invalid_llm_json_returns_502(
+def test_agent_preview_invalid_llm_json_uses_deterministic_fallback(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _make_repo(tmp_path)
     llm_client = FakeOpenRouterClient("not json")
+    monkeypatch.setenv("REPOPILOT_LLM_PROVIDER", "openrouter")
     monkeypatch.setattr(
         OpenRouterLLMClient,
         "from_environment",
@@ -141,9 +173,12 @@ def test_agent_preview_invalid_llm_json_returns_502(
         "/agent/preview",
         json={"root_path": str(tmp_path), "issue": "Fix login validation"},
     )
+    body = response.json()
 
-    assert response.status_code == 502
-    assert "not valid JSON" in response.json()["detail"]
+    assert response.status_code == 200
+    assert body["used_llm"] is False
+    assert body["plan"]["objective"] == "Fix login validation"
+    assert "deterministic fallback" in body["markdown_summary"]
 
 
 def test_agent_preview_returns_null_patch_proposal_when_preview_is_not_safe(
@@ -152,6 +187,7 @@ def test_agent_preview_returns_null_patch_proposal_when_preview_is_not_safe(
 ) -> None:
     _make_repo(tmp_path)
     llm_client = FakeOpenRouterClient(make_plan_json(relevant_files=["src/missing.py"]))
+    monkeypatch.setenv("REPOPILOT_LLM_PROVIDER", "openrouter")
     monkeypatch.setattr(
         OpenRouterLLMClient,
         "from_environment",
@@ -267,8 +303,8 @@ def test_agent_preview_does_not_apply_run_repair_or_write_files(
     files = _make_repo(tmp_path)
     original_content = files[0].read_text(encoding="utf-8")
 
-    def fail_openrouter(*args: Any, **kwargs: Any) -> None:
-        raise AssertionError("OpenRouter should not be called in deterministic mode")
+    def fail_llm_provider(*args: Any, **kwargs: Any) -> None:
+        raise AssertionError("LLM provider should not be called in deterministic mode")
 
     def fail_run_command(*args: Any, **kwargs: Any) -> None:
         raise AssertionError("run_command should not be called")
@@ -282,7 +318,10 @@ def test_agent_preview_does_not_apply_run_repair_or_write_files(
     def fail_self_correction(*args: Any, **kwargs: Any) -> None:
         raise AssertionError("self-correction should not be started")
 
-    monkeypatch.setattr(OpenRouterLLMClient, "from_environment", fail_openrouter)
+    monkeypatch.setattr(
+        "repopilot.agent.preview.create_configured_llm_client",
+        fail_llm_provider,
+    )
     monkeypatch.setattr("repopilot.tools.commands.run_command", fail_run_command)
     monkeypatch.setattr(
         "repopilot.patching.applier.apply_patch_proposal",
@@ -354,6 +393,12 @@ class FakeOpenRouterClient(FakeLLMClient):
     def __init__(self, fixed_response: str) -> None:
         super().__init__(fixed_response)
         self.model = "openrouter/fake"
+
+
+class FakeOpenAIClient(FakeLLMClient):
+    def __init__(self, fixed_response: str) -> None:
+        super().__init__(fixed_response)
+        self.model = "openai/fake"
 
 
 class FailingOpenRouterClient:

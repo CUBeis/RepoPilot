@@ -117,21 +117,37 @@ endpoints and does not apply patches, run commands, generate repairs, or start
 self-correction.
 
 Use `use_llm=false` for the safest deterministic demo. Use `use_llm=true` only
-after setting OpenRouter variables in the FastAPI server environment:
+after selecting and configuring a provider in the FastAPI server environment.
+
+Direct OpenAI setup:
 
 ```powershell
+$env:REPOPILOT_LLM_PROVIDER = "openai"
+$env:OPENAI_API_KEY = "your-new-openai-key"
+$env:OPENAI_MODEL = "gpt-5.5"
+```
+
+OpenRouter setup:
+
+```powershell
+$env:REPOPILOT_LLM_PROVIDER = "openrouter"
 $env:OPENROUTER_API_KEY = "your-openrouter-key"
 $env:OPENROUTER_MODEL = "~openai/gpt-latest"
 $env:OPENROUTER_HTTP_REFERER = "https://github.com/CUBeis/RepoPilot"
 $env:OPENROUTER_APP_TITLE = "RepoPilot"
 ```
 
+OpenAI and OpenRouter are different providers. Do not send an `OPENAI_API_KEY`
+to OpenRouter. Never commit real keys; if a key was pasted or shared, revoke it
+and generate a new one.
+
 ### Optional OpenRouter Setup
 
-`POST /agent/preview` can use OpenRouter for LLM-backed planning. Set the API key
-in your shell before calling the endpoint:
+`POST /agent/preview` can use OpenRouter for LLM-backed planning. Set the
+provider and API key in your shell before calling the endpoint:
 
 ```powershell
+$env:REPOPILOT_LLM_PROVIDER = "openrouter"
 $env:OPENROUTER_API_KEY = "your-openrouter-key"
 $env:OPENROUTER_MODEL = "~openai/gpt-latest"
 $env:OPENROUTER_HTTP_REFERER = "https://github.com/CUBeis/RepoPilot"
@@ -139,6 +155,22 @@ $env:OPENROUTER_APP_TITLE = "RepoPilot"
 ```
 
 Only `OPENROUTER_API_KEY` is required. The other variables are optional.
+
+### Optional Direct OpenAI Setup
+
+To use a direct OpenAI API key instead of OpenRouter:
+
+```powershell
+$env:REPOPILOT_LLM_PROVIDER = "openai"
+$env:OPENAI_API_KEY = "your-new-openai-key"
+$env:OPENAI_MODEL = "gpt-5.5"
+```
+
+Then restart FastAPI:
+
+```powershell
+uvicorn repopilot.main:app --reload
+```
 
 ## Suggested Demo Path
 

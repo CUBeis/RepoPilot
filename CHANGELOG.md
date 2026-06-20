@@ -13,11 +13,15 @@ All notable changes to RepoPilot are documented here.
 - Bounded agent preview response with plan, optional patch proposal preview,
   Markdown summary, and explicit safety note.
 - Streamlit demo UI for running safe RepoPilot previews without Swagger or curl.
+- Direct OpenAI provider support behind the existing `LLMClient` abstraction.
+- `REPOPILOT_LLM_PROVIDER` selection for `openai` or `openrouter`.
 
 ### Safety
 
 - OpenRouter secrets are read from environment variables and are never
   hardcoded or returned in API errors.
+- Direct OpenAI secrets are read only from `OPENAI_API_KEY` and are never sent
+  to OpenRouter.
 - The agent preview endpoint does not apply patches, run commands, generate
   repairs, start self-correction, or write files.
 - The Streamlit UI calls existing safe endpoints and does not add hidden
