@@ -49,8 +49,8 @@ RepoPilot is designed around explicit boundaries:
   returned through APIs.
 - **Deterministic reporting:** report endpoints summarize supplied payloads and
   do not execute tools.
-- **No real provider calls yet:** LLM-powered paths use injected clients and fake
-  deterministic clients in tests.
+- **Provider calls are isolated:** real OpenRouter calls happen only on the
+  preview endpoint when `use_llm=true`; tests still use deterministic fakes.
 
 ## Quickstart
 
@@ -98,6 +98,20 @@ Run the CLI demo:
 repopilot report-demo
 ```
 
+### Optional OpenRouter Setup
+
+`POST /agent/preview` can use OpenRouter for LLM-backed planning. Set the API key
+in your shell before calling the endpoint:
+
+```powershell
+$env:OPENROUTER_API_KEY = "your-openrouter-key"
+$env:OPENROUTER_MODEL = "~openai/gpt-latest"
+$env:OPENROUTER_HTTP_REFERER = "https://github.com/CUBeis/RepoPilot"
+$env:OPENROUTER_APP_TITLE = "RepoPilot"
+```
+
+Only `OPENROUTER_API_KEY` is required. The other variables are optional.
+
 ## Suggested Demo Path
 
 Use Swagger at `http://127.0.0.1:8000/docs` and show this flow:
@@ -109,6 +123,8 @@ Use Swagger at `http://127.0.0.1:8000/docs` and show this flow:
 5. `POST /repositories/context-preview`
 6. `POST /repositories/plan-preview`
 7. `POST /repositories/patch-preview`
+8. Optional: `POST /agent/preview` with `use_llm=false` for a safe full preview,
+   or with `use_llm=true` after configuring OpenRouter.
 
 This path starts with safe demos and reporting, then shows repository
 understanding, retrieval, planning, and patch preview without mutating files.
@@ -128,6 +144,24 @@ understanding, retrieval, planning, and patch preview without mutating files.
 - `POST /repositories/context-preview` - read-only retrieved chunk previews.
 - `POST /repositories/plan-preview` - deterministic implementation plan.
 - `POST /repositories/patch-preview` - deterministic patch proposal preview.
+
+### Agent Preview
+
+- `POST /agent/preview` - preview repository context, a plan, and an optional
+  patch proposal. Uses deterministic planning when `use_llm=false` and
+  OpenRouter-backed planning when `use_llm=true`.
+
+Example request body:
+
+```json
+{
+  "root_path": "D:/RepoPilot",
+  "issue": "Improve scanner error handling",
+  "top_k": 5,
+  "max_preview_chars": 1000,
+  "use_llm": true
+}
+```
 
 ### Patch Application And Validation
 
@@ -178,10 +212,11 @@ prompting. It shows the backend architecture of an agentic coding system:
 
 ## Current Limitations
 
-RepoPilot does not yet include real provider integrations, embeddings, a vector
-database, a frontend, authentication, Docker deployment, or autonomous
-end-to-end repair generation. Those are intentionally deferred until the safety
-contracts and deterministic workflow layers are solid.
+RepoPilot now includes an optional OpenRouter provider adapter for preview-only
+planning. It does not yet include embeddings, a vector database, a frontend,
+authentication, Docker deployment, or autonomous end-to-end repair generation.
+Those are intentionally deferred until the safety contracts and deterministic
+workflow layers are solid.
 
 ## v1.0 Readiness
 

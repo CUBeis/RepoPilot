@@ -2,6 +2,24 @@
 
 All notable changes to RepoPilot are documented here.
 
+## Unreleased
+
+### Added
+
+- OpenRouter LLM provider adapter implementing the existing `LLMClient`
+  protocol.
+- Preview-only `POST /agent/preview` endpoint that can use deterministic
+  planning or OpenRouter-backed planning.
+- Bounded agent preview response with plan, optional patch proposal preview,
+  Markdown summary, and explicit safety note.
+
+### Safety
+
+- OpenRouter secrets are read from environment variables and are never
+  hardcoded or returned in API errors.
+- The agent preview endpoint does not apply patches, run commands, generate
+  repairs, start self-correction, or write files.
+
 ## v1.0.0 - 2026-06-19
 
 RepoPilot v1.0.0 is the first portfolio-ready release candidate. It presents a

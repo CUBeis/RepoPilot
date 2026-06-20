@@ -6,6 +6,7 @@ from repopilot.agent.models import (
     SelfCorrectionResult,
 )
 from repopilot.agent.orchestrator import run_self_correction_loop
+from repopilot.agent.preview import AgentPreviewError, create_agent_preview
 from repopilot.agent.repair import (
     LLMRepairProposalError,
     create_llm_repair_proposal,
@@ -17,6 +18,8 @@ __all__ = [
     "RepairApprovalRequest",
     "SelfCorrectionAttempt",
     "SelfCorrectionResult",
+    "AgentPreviewError",
+    "create_agent_preview",
     "create_llm_repair_proposal",
     "prepare_repair_for_approval",
     "run_self_correction_loop",
