@@ -501,25 +501,6 @@ This separation makes the project more reliable and safer for public demos.
 
 ---
 
-## Suggested Demo Flow
-
-For the best presentation, use this flow:
-
-1. Open the Streamlit frontend.
-2. Show that the project works without an API key.
-3. Explain the deterministic demo mode.
-4. Run the default demo.
-5. Show the generated repository insights.
-6. Open the FastAPI docs.
-7. Show the project structure.
-8. Run tests.
-9. Show the security checklist.
-10. Explain optional LLM support.
-
-This makes the project look polished, safe, and production-aware.
-
----
-
 ## What Makes RepoPilot Different?
 
 Many AI projects depend completely on API keys.
