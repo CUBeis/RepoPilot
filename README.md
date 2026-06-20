@@ -1,278 +1,716 @@
 # RepoPilot
 
-RepoPilot is a production-grade portfolio project for an agentic AI software
-engineer: a coding assistant backend that can inspect a repository, retrieve
-relevant code, plan changes, propose patches, apply approved edits, validate
-with allowlisted commands, prepare repairs, and generate PR-ready reports.
+<p align="center">
+  <b>Your AI-powered repository co-pilot for exploring, understanding, and presenting codebases faster.</b>
+</p>
 
-The project is intentionally built in small, safe milestones. Most endpoints are
-read-only previews or reports. Mutating endpoints require explicit approval, and
-command execution is allowlisted.
+<p align="center">
+  <a href="#overview">Overview</a> •
+  <a href="#live-demo">Live Demo</a> •
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#testing--quality">Testing</a> •
+  <a href="#roadmap">Roadmap</a>
+</p>
 
-## Elevator Pitch
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11%2B-blue">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-Backend-009688">
+  <img alt="Streamlit" src="https://img.shields.io/badge/Streamlit-Frontend-ff4b4b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-438%20passed-brightgreen">
+  <img alt="LLM Optional" src="https://img.shields.io/badge/LLM-Optional-purple">
+  <img alt="Demo Mode" src="https://img.shields.io/badge/Demo-No%20API%20Key%20Required-orange">
+</p>
 
-RepoPilot demonstrates the engineering architecture behind a real AI coding
-agent without hiding unsafe behavior behind a chatbot. It separates repository
-understanding, planning, patch proposal, approval, application, validation,
-failure analysis, repair approval, and reporting into testable modules with
-clear safety boundaries.
+---
 
-## What RepoPilot Does
+## Overview
 
-- Scans local repositories and returns safe file metadata.
-- Chunks source files deterministically for future retrieval and RAG.
-- Retrieves relevant chunks with explainable keyword scoring.
-- Builds repository context for an issue.
-- Creates deterministic implementation plans.
-- Provides provider-independent LLM client abstractions with fake clients for
-  tests.
-- Proposes patches without applying them.
-- Applies patches only after explicit approval.
-- Runs validation commands only through an allowlist.
-- Analyzes validation failures into structured summaries.
-- Prepares repair proposals for human approval.
-- Produces workflow reports suitable for demos, APIs, and PR summaries.
+**RepoPilot** is a developer-focused repository analysis tool designed to help users understand software projects faster.
 
-## Why It Is Safe
+Instead of manually opening dozens of files, searching through folders, guessing architecture decisions, or trying to understand how a codebase works from scratch, RepoPilot gives users a clean, guided way to inspect a repository and generate useful project insights.
 
-RepoPilot is designed around explicit boundaries:
+The project is built with a strong focus on:
 
-- **Read-only previews:** scan, context, plan, and patch preview endpoints do not
-  mutate repositories.
-- **Approval-gated mutation:** patch and repair apply endpoints require
-  `approved=true` and proposals that require approval.
-- **Command allowlisting:** validation commands run only when they match an
-  allowed command list.
-- **No hidden self-correction:** repair generation, approval, application, and
-  validation are separate steps.
-- **Bounded outputs:** preview text and command output are truncated before being
-  returned through APIs.
-- **Deterministic reporting:** report endpoints summarize supplied payloads and
-  do not execute tools.
-- **Provider calls are optional:** OpenAI or OpenRouter calls happen only on the
-  preview endpoint when `use_llm=true`; tests and the default demo path use
-  deterministic behavior.
+- **Fast local setup**
+- **Clean public demo experience**
+- **No required API key for the default demo path**
+- **Optional LLM-powered analysis**
+- **Backend/frontend separation**
+- **Reliable testing and code quality**
+- **Portfolio-ready presentation**
 
-## Quickstart
+RepoPilot is especially useful for:
 
-RepoPilot works fully in deterministic demo mode without API keys. LLM provider
-integration is optional and may require valid credits/model access.
+- Developers joining a new project
+- Students documenting graduation projects
+- Recruiters or reviewers checking a repository quickly
+- Teams that want a quick codebase overview
+- AI-assisted development workflows
+- Public demos where the app should work without private credentials
 
-Create and activate a virtual environment:
+---
+
+## Why RepoPilot?
+
+Understanding a new repository can be painful.
+
+A developer usually needs to answer questions like:
+
+- What does this project do?
+- Where is the main entry point?
+- How is the code organized?
+- What are the important files?
+- How do I run it?
+- What parts are backend, frontend, tests, or documentation?
+- Is there any AI/LLM support?
+- Can I safely demo this project without exposing secrets?
+
+RepoPilot is designed to solve this problem by acting as a **repository co-pilot**.
+
+It helps transform a raw codebase into a clearer, more understandable project experience.
+
+---
+
+## Live Demo
+
+> Add your deployed demo link here after deployment.
+
+```txt
+Demo URL: https://your-demo-link.vercel.app
+Backend URL: https://your-backend-link.onrender.com
+```
+
+RepoPilot supports a public-friendly demo mode by default.
+
+That means the project can be shown to users, recruiters, teachers, or teammates without requiring them to provide an OpenAI key or any private credentials.
+
+---
+
+## Demo Mode
+
+RepoPilot includes a **deterministic no-key demo mode**.
+
+This is the default public path.
+
+### What this means
+
+Users can open the project and test the core experience without needing:
+
+- OpenAI API key
+- OpenRouter API key
+- Paid LLM account
+- Private `.env` file
+- Secret configuration
+
+This makes RepoPilot safer and easier to share publicly.
+
+### Optional LLM Support
+
+LLM support is still available, but it is clearly optional.
+
+Users who want enhanced AI-powered analysis can configure their own API key locally.
+
+The project keeps the default experience safe for public demos while still allowing advanced users to enable AI features.
+
+---
+
+## Features
+
+### Repository Understanding
+
+RepoPilot helps users inspect and understand a codebase by presenting repository information in a structured and user-friendly way.
+
+It can be used to identify:
+
+- Project structure
+- Important directories
+- Main application files
+- Backend and frontend separation
+- Documentation files
+- Test files
+- Configuration files
+- Environment examples
+- Public demo readiness
+
+---
+
+### Public Demo Ready
+
+RepoPilot is designed to be demoed safely.
+
+The app avoids depending on private credentials for its default experience and provides a clear no-key path for reviewers.
+
+This is important because many portfolio projects fail during demos due to missing API keys, broken `.env` files, or hidden local-only assumptions.
+
+RepoPilot avoids that by keeping the public demo deterministic and predictable.
+
+---
+
+### Optional AI Integration
+
+RepoPilot supports optional AI/LLM functionality for deeper repository analysis.
+
+The project can be configured with providers such as:
+
+- OpenAI
+- OpenRouter
+
+However, these providers are not required for the default demo flow.
+
+This makes the project flexible:
+
+- Beginners can run it immediately.
+- Reviewers can test it without setup pain.
+- Advanced users can enable LLM features when needed.
+
+---
+
+### FastAPI Backend
+
+The backend is powered by **FastAPI**, giving the project:
+
+- Fast API performance
+- Clean endpoint structure
+- Modern Python backend architecture
+- Easy local development
+- Interactive API docs
+- Simple integration with frontend clients
+
+FastAPI is a strong choice for RepoPilot because the project needs a reliable API layer that can serve repository analysis results to the frontend.
+
+---
+
+### Streamlit Frontend
+
+The frontend is built with **Streamlit**, making the interface:
+
+- Simple to run locally
+- Fast to prototype
+- Easy to demo
+- Suitable for internal tools and AI apps
+- Friendly for non-technical reviewers
+
+Streamlit works well for RepoPilot because the goal is to present repository insights clearly without overcomplicating the UI layer.
+
+---
+
+### Testing and Quality
+
+RepoPilot includes a strong test suite and code quality checks.
+
+Current validation result:
+
+```txt
+438 passed, 1 warning
+```
+
+Linting result:
+
+```txt
+All checks passed!
+```
+
+This gives confidence that the project is not just a prototype, but a tested and maintainable codebase.
+
+---
+
+### Security-Aware Setup
+
+RepoPilot is prepared for public sharing.
+
+The project includes:
+
+- `.env` ignored in `.gitignore`
+- `.env.example` with placeholder keys only
+- No real-looking secret keys committed
+- Optional API configuration
+- Safe public demo defaults
+
+This helps avoid one of the most common mistakes in AI projects: accidentally exposing API keys.
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| Backend | FastAPI | API server and backend logic |
+| Frontend | Streamlit | Interactive user interface |
+| Language | Python | Core application development |
+| Testing | Pytest | Automated test coverage |
+| Linting | Ruff | Code quality and formatting checks |
+| Config | `.env.example` | Safe environment variable template |
+| AI Support | Optional OpenAI/OpenRouter | Enhanced LLM-powered analysis |
+
+---
+
+## Project Structure
+
+```txt
+RepoPilot/
+├── repopilot/
+│   ├── main.py
+│   └── ...
+│
+├── frontend/
+│   └── streamlit_app.py
+│
+├── docs/
+│   └── public_demo_checklist.md
+│
+├── tests/
+│   └── ...
+│
+├── .env.example
+├── .gitignore
+├── CHANGELOG.md
+├── README.md
+└── pyproject.toml
+```
+
+### Main folders
+
+| Path | Description |
+|---|---|
+| `repopilot/` | Main backend package |
+| `repopilot/main.py` | FastAPI application entry point |
+| `frontend/streamlit_app.py` | Streamlit frontend entry point |
+| `docs/` | Project documentation |
+| `tests/` | Automated tests |
+| `.env.example` | Safe example environment variables |
+| `CHANGELOG.md` | Project change history |
+
+---
+
+## Quick Start
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/CUBeis/RepoPilot.git
+cd RepoPilot
+```
+
+---
+
+### 2. Create and activate a virtual environment
+
+#### Windows PowerShell
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-Install the project with development dependencies:
+#### Windows CMD
 
-```powershell
-python -m pip install --upgrade pip
+```cmd
+python -m venv .venv
+.venv\Scripts\activate.bat
+```
+
+#### macOS / Linux
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+---
+
+### 3. Install dependencies
+
+```bash
 python -m pip install -e ".[dev]"
 ```
 
-Run the FastAPI app:
+---
 
-```powershell
+### 4. Run the backend
+
+```bash
 uvicorn repopilot.main:app --reload
 ```
 
-Open:
+The backend should now be running locally.
 
-```text
+FastAPI interactive docs are usually available at:
+
+```txt
 http://127.0.0.1:8000/docs
 ```
 
-Run tests:
+---
 
-```powershell
-python -m pytest
-```
+### 5. Run the frontend
 
-Run Ruff:
+Open another terminal:
 
-```powershell
-python -m ruff check .
-```
-
-Run the CLI demo:
-
-```powershell
-repopilot report-demo
-```
-
-## Streamlit Demo UI
-
-Start the FastAPI backend:
-
-```powershell
-uvicorn repopilot.main:app --reload
-```
-
-Start Streamlit in another terminal:
-
-```powershell
+```bash
 streamlit run frontend/streamlit_app.py
 ```
 
-The Streamlit UI is the friendliest demo surface. It calls the existing FastAPI
-endpoints and does not apply patches, run commands, generate repairs, or start
-self-correction.
+The frontend should open in your browser.
 
-Use `use_llm=false` for the default deterministic demo. It works without OpenAI,
-OpenRouter, or any API key. Use `use_llm=true` only after selecting and
-configuring a provider in the FastAPI server environment.
+---
 
-## Optional LLM Provider Setup
+## Environment Variables
 
-LLM provider integration is optional and may require valid credits/model access.
-Never commit real keys. If a key was pasted, shared, or committed, revoke it and
-generate a new one.
+RepoPilot works in demo mode without API keys.
 
-Direct OpenAI setup:
+For optional LLM features, create a `.env` file based on `.env.example`.
 
-```powershell
-$env:REPOPILOT_LLM_PROVIDER = "openai"
-$env:OPENAI_API_KEY = "your-new-openai-key"
-$env:OPENAI_MODEL = "gpt-5.5"
+```bash
+cp .env.example .env
 ```
 
-OpenRouter setup:
+Example:
 
-```powershell
-$env:REPOPILOT_LLM_PROVIDER = "openrouter"
-$env:OPENROUTER_API_KEY = "your-openrouter-key"
-$env:OPENROUTER_MODEL = "~openai/gpt-latest"
-$env:OPENROUTER_HTTP_REFERER = "https://github.com/CUBeis/RepoPilot"
-$env:OPENROUTER_APP_TITLE = "RepoPilot"
+```env
+OPENAI_API_KEY=
+OPENROUTER_API_KEY=
 ```
 
-OpenAI and OpenRouter are different providers. Do not send an `OPENAI_API_KEY`
-to OpenRouter.
+Do not commit your real `.env` file.
 
-## Suggested Demo Path
+The `.env` file is ignored by Git.
 
-Use Streamlit first, then Swagger at `http://127.0.0.1:8000/docs` if you want to
-show the raw API surface:
+---
 
-1. Start FastAPI with `uvicorn repopilot.main:app --reload`
-2. Start Streamlit with `streamlit run frontend/streamlit_app.py`
-3. Overview -> `Check API Health`
-4. Demo Workflow -> `Run Safe Demo Workflow`
-5. Agent Preview -> `Run Agent Preview` with `use_llm=false`
-6. Repository Context -> `Retrieve Context`
-7. Plan Preview -> `Generate Deterministic Plan`
-8. Patch Preview -> `Generate Patch Preview`
+## Running Tests
 
-The equivalent Swagger flow is:
+Run the full test suite:
 
-1. `GET /health`
-2. `GET /demo/workflow`
-3. `POST /reports/workflow`
-4. `POST /repositories/scan-summary`
-5. `POST /repositories/context-preview`
-6. `POST /repositories/plan-preview`
-7. `POST /repositories/patch-preview`
-8. Optional: `POST /agent/preview` with `use_llm=false` for a safe full preview,
-   or with `use_llm=true` after configuring OpenAI or OpenRouter.
-
-This path starts with safe demos and reporting, then shows repository
-understanding, retrieval, planning, and patch preview without mutating files.
-
-## API Endpoints
-
-### Core And Demo
-
-- `GET /health` - health check.
-- `GET /demo/workflow` - deterministic in-memory successful workflow report.
-- `GET /report-demo` - in-memory sample run report as JSON.
-- `GET /report-demo/markdown` - in-memory sample run report as Markdown.
-
-### Repository Understanding
-
-- `POST /repositories/scan-summary` - read-only repository file metadata.
-- `POST /repositories/context-preview` - read-only retrieved chunk previews.
-- `POST /repositories/plan-preview` - deterministic implementation plan.
-- `POST /repositories/patch-preview` - deterministic patch proposal preview.
-
-### Agent Preview
-
-- `POST /agent/preview` - preview repository context, a plan, and an optional
-  patch proposal. Uses deterministic planning when `use_llm=false` and
-  the configured OpenAI/OpenRouter provider when `use_llm=true`.
-
-Example request body:
-
-```json
-{
-  "root_path": "D:/RepoPilot",
-  "issue": "Improve scanner error handling",
-  "top_k": 5,
-  "max_preview_chars": 1000,
-  "use_llm": false
-}
+```bash
+pytest
 ```
 
-### Patch Application And Validation
+Expected current result:
 
-- `POST /patches/apply` - apply an approved patch proposal.
-- `POST /patches/apply-and-validate` - apply an approved proposal and run
-  allowlisted validation commands.
-- `POST /validation/analyze-failures` - summarize supplied validation failures.
+```txt
+438 passed, 1 warning
+```
 
-### Repair Workflow
+---
 
-- `POST /repairs/approval-request` - create a repair approval request from a
-  failed attempt and fake LLM response JSON.
-- `POST /repairs/apply-approved` - apply an approved repair proposal, optionally
-  running validation.
+## Code Quality
 
-### Reporting
+Run Ruff:
 
-- `POST /reports/repair-apply-result` - summarize a supplied repair apply
-  result.
-- `POST /reports/workflow` - summarize supplied workflow payloads into one
-  PR-ready report.
+```bash
+ruff check .
+```
 
-## Documentation
+Expected current result:
 
-- [Project brief](docs/project_brief.md)
-- [Demo guide](docs/demo_guide.md)
-- [API examples](docs/api_examples.md)
-- [Interview script](docs/interview_script.md)
-- [Architecture summary](docs/architecture_summary.md)
-- [Release checklist](docs/release_checklist.md)
-- [Public demo checklist](docs/public_demo_checklist.md)
-- [Learning notes](docs/learning_notes/)
-- [Changelog](CHANGELOG.md)
+```txt
+All checks passed!
+```
 
-## Portfolio Value
+---
 
-RepoPilot is impressive as a portfolio project because it demonstrates more than
-prompting. It shows the backend architecture of an agentic coding system:
+## Security Checklist
 
-- deterministic repository analysis before LLM reasoning
-- typed data contracts with Pydantic
-- strict separation between planning, proposing, applying, validating, repairing,
-  and reporting
-- human approval checkpoints
-- command execution safety
-- deterministic fake LLM clients for testability
-- extensive tests across API and core layers
-- clear documentation for demos and interviews
+RepoPilot is prepared for public GitHub/demo usage.
 
-## Current Limitations
+Current security status:
 
-RepoPilot includes optional OpenAI/OpenRouter provider adapters for preview-only
-planning and a Streamlit demo UI. It does not yet include embeddings, a vector
-database, authentication, Docker deployment, or autonomous end-to-end repair
-generation. Those are intentionally deferred until the safety contracts and
-deterministic workflow layers are solid.
+```txt
+.env is ignored in .gitignore
+.env.example contains placeholder keys only
+No real-looking sk- secrets were found
+```
 
-## v1.0 Readiness
+Before publishing, always verify:
 
-RepoPilot is v1.0-ready as a portfolio/demo backend. The public presentation
-surface includes a polished README, demo guide, API examples, interview script,
-architecture summary, changelog, release checklist, and a fully passing test and
-Ruff baseline.
+- No real API keys are committed
+- `.env` is ignored
+- Demo mode works without secrets
+- Public docs do not expose private credentials
+- Deployment settings use environment variables safely
+
+---
+
+## Architecture
+
+RepoPilot follows a simple and clean architecture:
+
+```txt
+User
+ |
+ v
+Streamlit Frontend
+ |
+ v
+FastAPI Backend
+ |
+ v
+Repo Analysis / Demo Logic / Optional LLM Layer
+ |
+ v
+Structured Output
+```
+
+### Backend Role
+
+The backend is responsible for:
+
+- Serving API endpoints
+- Running repository analysis logic
+- Handling deterministic demo behavior
+- Managing optional AI provider integration
+- Returning structured data to the frontend
+
+### Frontend Role
+
+The frontend is responsible for:
+
+- Displaying the user interface
+- Presenting repository analysis results
+- Making the demo experience clear
+- Helping users understand the project quickly
+
+### Optional LLM Layer
+
+The optional LLM layer can enhance analysis when configured.
+
+However, it does not block the app from running.
+
+This separation makes the project more reliable and safer for public demos.
+
+---
+
+## Screenshots
+
+> Add screenshots inside an `assets/` folder, then update the image paths below.
+
+### Home Screen
+
+```md
+![RepoPilot Home](assets/repopilot-home.png)
+```
+
+### Demo Mode
+
+```md
+![RepoPilot Demo Mode](assets/repopilot-demo-mode.png)
+```
+
+### Repository Analysis
+
+```md
+![RepoPilot Analysis](assets/repopilot-analysis.png)
+```
+
+---
+
+## Suggested Demo Flow
+
+For the best presentation, use this flow:
+
+1. Open the Streamlit frontend.
+2. Show that the project works without an API key.
+3. Explain the deterministic demo mode.
+4. Run the default demo.
+5. Show the generated repository insights.
+6. Open the FastAPI docs.
+7. Show the project structure.
+8. Run tests.
+9. Show the security checklist.
+10. Explain optional LLM support.
+
+This makes the project look polished, safe, and production-aware.
+
+---
+
+## What Makes RepoPilot Different?
+
+Many AI projects depend completely on API keys.
+
+That creates problems:
+
+- The demo breaks if the key is missing.
+- The project cannot be safely shared.
+- Reviewers cannot test the app easily.
+- Secret leakage becomes a risk.
+- Public deployment becomes harder.
+
+RepoPilot avoids these issues by making the default path deterministic and no-key.
+
+This means the project is more reliable for:
+
+- GitHub visitors
+- Recruiters
+- Graduation project reviewers
+- Technical interviews
+- Public demos
+- Team presentations
+
+---
+
+## Development Commands
+
+### Install project
+
+```bash
+python -m pip install -e ".[dev]"
+```
+
+### Run backend
+
+```bash
+uvicorn repopilot.main:app --reload
+```
+
+### Run frontend
+
+```bash
+streamlit run frontend/streamlit_app.py
+```
+
+### Run tests
+
+```bash
+pytest
+```
+
+### Run linting
+
+```bash
+ruff check .
+```
+
+---
+
+## Changelog
+
+See [`CHANGELOG.md`](CHANGELOG.md) for project history and updates.
+
+Recent highlight:
+
+```txt
+Public demo polish is done.
+RepoPilot now presents the default path as no-key deterministic demo mode,
+with LLM support clearly optional.
+```
+
+---
+
+## Roadmap
+
+Planned improvements:
+
+- Add richer repository visualizations
+- Add more detailed file-level summaries
+- Add dependency graph support
+- Add exportable reports
+- Add GitHub repository import flow
+- Add advanced LLM provider selection
+- Add deployment documentation
+- Add Docker support
+- Add CI pipeline
+- Add more UI polish for the public demo
+- Add example repositories for testing
+
+---
+
+## Use Cases
+
+### For Developers
+
+RepoPilot helps developers understand unfamiliar projects faster by giving them a guided overview of the repository.
+
+### For Students
+
+RepoPilot can help students present their graduation projects more clearly by explaining structure, features, setup, and technical decisions.
+
+### For Recruiters
+
+Recruiters and technical reviewers can use RepoPilot to quickly understand what a project does without manually reading every file.
+
+### For Teams
+
+Teams can use RepoPilot as an onboarding assistant for new members joining an existing codebase.
+
+### For AI Workflows
+
+RepoPilot can serve as a base for AI-powered repository documentation, code review, and project explanation tools.
+
+---
+
+## Public Demo Checklist
+
+Before sharing the project publicly, confirm:
+
+- [ ] The backend runs locally.
+- [ ] The frontend runs locally.
+- [ ] Demo mode works without API keys.
+- [ ] `.env` is ignored.
+- [ ] `.env.example` contains placeholders only.
+- [ ] Tests pass.
+- [ ] Ruff passes.
+- [ ] README has screenshots.
+- [ ] Deployment links are added.
+- [ ] No real secrets are committed.
+
+---
+
+## Contributing
+
+Contributions are welcome.
+
+To contribute:
+
+1. Fork the repository.
+2. Create a new branch.
+3. Make your changes.
+4. Run tests.
+5. Run linting.
+6. Open a pull request.
+
+```bash
+pytest
+ruff check .
+```
+
+Please keep contributions clean, tested, and easy to review.
+
+---
+
+## Author
+
+**Zeyad Abdo**
+
+AI Engineer / Developer
+
+- GitHub: `https://github.com/CUBeis`
+- LinkedIn: `https://www.linkedin.com/in/zeyad-abdo-47826331b/`
+
+---
+
+## License
+
+Add your license here.
+
+Recommended for public portfolio projects:
+
+```txt
+MIT License
+```
+
+---
+
+## Final Note
+
+RepoPilot is built to make repositories easier to understand, safer to demo, and more impressive to present.
+
+It combines a clean backend, simple frontend, deterministic demo mode, optional AI support, strong testing, and security-aware project setup into one polished developer tool.
+
+
+```txt
+assets/repopilot-home.png
+assets/repopilot-demo-mode.png
+assets/repopilot-analysis.png
+```
