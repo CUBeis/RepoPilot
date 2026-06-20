@@ -64,10 +64,10 @@ def render_sidebar() -> dict[str, Any]:
             value=1000,
             step=100,
         )
-        use_llm = st.checkbox("Use OpenRouter LLM planning", value=False)
+        use_llm = st.checkbox("Use optional LLM planning", value=False)
         st.info(
-            "OpenRouter requires OPENROUTER_API_KEY to be set in the FastAPI "
-            "server environment. Keep use_llm disabled for the safest demo path."
+            "RepoPilot works without an API key. Enable LLM only if you "
+            "configured OpenAI or OpenRouter in the FastAPI server environment."
         )
 
     return {
@@ -147,8 +147,7 @@ def render_agent_preview(controls: dict[str, Any]) -> None:
         render_error(result["error"])
         if controls["use_llm"]:
             st.warning(
-                "Try disabling use_llm or check OPENROUTER_MODEL / model JSON "
-                "compatibility."
+                "LLM planning failed, but deterministic preview is available."
             )
 
     if controls["use_llm"] and st.button("Run Deterministic Fallback"):
@@ -250,11 +249,11 @@ def render_troubleshooting() -> None:
         - FastAPI server not running: start it with
           `uvicorn repopilot.main:app --reload`.
         - Wrong API base URL: check the sidebar value.
-        - Missing `OPENROUTER_API_KEY`: disable use_llm or set it in the
-          FastAPI server shell.
-        - OpenRouter model returned invalid JSON: try deterministic fallback.
-        - OpenRouter response content was not text: show the backend error and
-          switch models.
+        - Missing provider key: disable use_llm or set `OPENAI_API_KEY` /
+          `OPENROUTER_API_KEY` in the FastAPI server shell.
+        - LLM model returned invalid JSON: try deterministic fallback.
+        - LLM response content was not text: show the backend error and switch
+          models.
         - Free models may be unreliable for structured JSON planning responses.
         - `use_llm=false` works without any API key.
         - Swagger is optional; this Streamlit UI is the preferred demo surface.

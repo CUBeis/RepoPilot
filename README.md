@@ -49,10 +49,14 @@ RepoPilot is designed around explicit boundaries:
   returned through APIs.
 - **Deterministic reporting:** report endpoints summarize supplied payloads and
   do not execute tools.
-- **Provider calls are isolated:** real OpenRouter calls happen only on the
-  preview endpoint when `use_llm=true`; tests still use deterministic fakes.
+- **Provider calls are optional:** OpenAI or OpenRouter calls happen only on the
+  preview endpoint when `use_llm=true`; tests and the default demo path use
+  deterministic behavior.
 
 ## Quickstart
+
+RepoPilot works fully in deterministic demo mode without API keys. LLM provider
+integration is optional and may require valid credits/model access.
 
 Create and activate a virtual environment:
 
@@ -116,8 +120,15 @@ The Streamlit UI is the friendliest demo surface. It calls the existing FastAPI
 endpoints and does not apply patches, run commands, generate repairs, or start
 self-correction.
 
-Use `use_llm=false` for the safest deterministic demo. Use `use_llm=true` only
-after selecting and configuring a provider in the FastAPI server environment.
+Use `use_llm=false` for the default deterministic demo. It works without OpenAI,
+OpenRouter, or any API key. Use `use_llm=true` only after selecting and
+configuring a provider in the FastAPI server environment.
+
+## Optional LLM Provider Setup
+
+LLM provider integration is optional and may require valid credits/model access.
+Never commit real keys. If a key was pasted, shared, or committed, revoke it and
+generate a new one.
 
 Direct OpenAI setup:
 
@@ -138,51 +149,21 @@ $env:OPENROUTER_APP_TITLE = "RepoPilot"
 ```
 
 OpenAI and OpenRouter are different providers. Do not send an `OPENAI_API_KEY`
-to OpenRouter. Never commit real keys; if a key was pasted or shared, revoke it
-and generate a new one.
-
-### Optional OpenRouter Setup
-
-`POST /agent/preview` can use OpenRouter for LLM-backed planning. Set the
-provider and API key in your shell before calling the endpoint:
-
-```powershell
-$env:REPOPILOT_LLM_PROVIDER = "openrouter"
-$env:OPENROUTER_API_KEY = "your-openrouter-key"
-$env:OPENROUTER_MODEL = "~openai/gpt-latest"
-$env:OPENROUTER_HTTP_REFERER = "https://github.com/CUBeis/RepoPilot"
-$env:OPENROUTER_APP_TITLE = "RepoPilot"
-```
-
-Only `OPENROUTER_API_KEY` is required. The other variables are optional.
-
-### Optional Direct OpenAI Setup
-
-To use a direct OpenAI API key instead of OpenRouter:
-
-```powershell
-$env:REPOPILOT_LLM_PROVIDER = "openai"
-$env:OPENAI_API_KEY = "your-new-openai-key"
-$env:OPENAI_MODEL = "gpt-5.5"
-```
-
-Then restart FastAPI:
-
-```powershell
-uvicorn repopilot.main:app --reload
-```
+to OpenRouter.
 
 ## Suggested Demo Path
 
 Use Streamlit first, then Swagger at `http://127.0.0.1:8000/docs` if you want to
-show the raw API surface. In Streamlit, click:
+show the raw API surface:
 
-1. Overview -> `Check API Health`
-2. Demo Workflow -> `Run Safe Demo Workflow`
-3. Agent Preview -> `Run Agent Preview` with `use_llm=false`
-4. Repository Context -> `Retrieve Context`
-5. Plan Preview -> `Generate Deterministic Plan`
-6. Patch Preview -> `Generate Patch Preview`
+1. Start FastAPI with `uvicorn repopilot.main:app --reload`
+2. Start Streamlit with `streamlit run frontend/streamlit_app.py`
+3. Overview -> `Check API Health`
+4. Demo Workflow -> `Run Safe Demo Workflow`
+5. Agent Preview -> `Run Agent Preview` with `use_llm=false`
+6. Repository Context -> `Retrieve Context`
+7. Plan Preview -> `Generate Deterministic Plan`
+8. Patch Preview -> `Generate Patch Preview`
 
 The equivalent Swagger flow is:
 
@@ -194,7 +175,7 @@ The equivalent Swagger flow is:
 6. `POST /repositories/plan-preview`
 7. `POST /repositories/patch-preview`
 8. Optional: `POST /agent/preview` with `use_llm=false` for a safe full preview,
-   or with `use_llm=true` after configuring OpenRouter.
+   or with `use_llm=true` after configuring OpenAI or OpenRouter.
 
 This path starts with safe demos and reporting, then shows repository
 understanding, retrieval, planning, and patch preview without mutating files.
@@ -219,7 +200,7 @@ understanding, retrieval, planning, and patch preview without mutating files.
 
 - `POST /agent/preview` - preview repository context, a plan, and an optional
   patch proposal. Uses deterministic planning when `use_llm=false` and
-  OpenRouter-backed planning when `use_llm=true`.
+  the configured OpenAI/OpenRouter provider when `use_llm=true`.
 
 Example request body:
 
@@ -229,7 +210,7 @@ Example request body:
   "issue": "Improve scanner error handling",
   "top_k": 5,
   "max_preview_chars": 1000,
-  "use_llm": true
+  "use_llm": false
 }
 ```
 
@@ -262,6 +243,7 @@ Example request body:
 - [Interview script](docs/interview_script.md)
 - [Architecture summary](docs/architecture_summary.md)
 - [Release checklist](docs/release_checklist.md)
+- [Public demo checklist](docs/public_demo_checklist.md)
 - [Learning notes](docs/learning_notes/)
 - [Changelog](CHANGELOG.md)
 
@@ -282,11 +264,11 @@ prompting. It shows the backend architecture of an agentic coding system:
 
 ## Current Limitations
 
-RepoPilot now includes an optional OpenRouter provider adapter for preview-only
-planning. It does not yet include embeddings, a vector database, a frontend,
-authentication, Docker deployment, or autonomous end-to-end repair generation.
-Those are intentionally deferred until the safety contracts and deterministic
-workflow layers are solid.
+RepoPilot includes optional OpenAI/OpenRouter provider adapters for preview-only
+planning and a Streamlit demo UI. It does not yet include embeddings, a vector
+database, authentication, Docker deployment, or autonomous end-to-end repair
+generation. Those are intentionally deferred until the safety contracts and
+deterministic workflow layers are solid.
 
 ## v1.0 Readiness
 

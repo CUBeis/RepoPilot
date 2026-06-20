@@ -15,6 +15,7 @@ All notable changes to RepoPilot are documented here.
 - Streamlit demo UI for running safe RepoPilot previews without Swagger or curl.
 - Direct OpenAI provider support behind the existing `LLMClient` abstraction.
 - `REPOPILOT_LLM_PROVIDER` selection for `openai` or `openrouter`.
+- Public demo checklist for running and screenshotting the no-key demo flow.
 
 ### Safety
 
@@ -26,6 +27,8 @@ All notable changes to RepoPilot are documented here.
   repairs, start self-correction, or write files.
 - The Streamlit UI calls existing safe endpoints and does not add hidden
   mutation, command execution, repair generation, or self-correction.
+- Public demo copy now emphasizes deterministic no-key usage, with LLM providers
+  remaining optional.
 
 ## v1.0.0 - 2026-06-19
 
